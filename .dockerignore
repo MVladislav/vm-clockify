@@ -1,0 +1,10 @@
+*
+!.env
+!app/
+!app/**
+!scripts/
+!scripts/**
+!README.md
+!requirements.txt
+!setup.cfg
+!setup.py

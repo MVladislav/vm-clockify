@@ -1,0 +1,10 @@
+starlette
+click
+coloredlogs
+verboselogs
+string-color
+progress
+progressbar2
+
+maxminddb
+requests

@@ -1,0 +1,184 @@
+name: Python DEV CI
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+env:
+  GIT_BRANCH_NAME: "${{ github.ref }}" # ${GIT_BRANCH_NAME##*/}
+  GIT_REPOSITORY_NAME: "${{ github.event.repository.name }}"
+
+  PROJECT_NAME: vm_clockify
+  ENV_MODE: "${{ contains(github.ref, 'main') && 'PROD' || 'KONS' }}"
+  VERSION: "0.0.1"
+  LOGGING_LEVEL: "${{ contains(github.ref, 'main') && 'INFO' || 'DEBUG' }}"
+  LOGGING_VERBOSE: "${{ contains(github.ref, 'main') && 2 || 3 }}"
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # TEST
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install pylint flake8 pytest
+          # install requirements if no setup.py is existing, else it will insall in next step
+          if [[ -f requirements.txt && ! -f setup.py ]]; then pip3 install -r requirements.txt; fi
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: install project by setup.py with dependencies
+        run: |
+          if [ -f setup.py ]; then pip3 install -v .; fi
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: analyzing the code with pylint
+        run: |
+          python3 -m pylint --rcfile=setup.cfg `find -regextype egrep -regex '(.*.py)$'` |
+          tee pylint.log
+
+      - name: lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics |
+          tee flake8_1.log
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics |
+          tee flake8_2.log
+
+      - name: test with pytest
+        run: |
+          python3 -m pytest |
+          tee pytest.log
+
+      - name: upload flake8_1.log as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: python test report
+          path: |
+            pylint.log
+            flake8_1.log
+            flake8_2.log
+            pytest.log
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
+
+  # BUILD
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  build:
+    needs: test
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      # - name: Build package
+      #   run: python3 -m build -s
+      - name: build binary wheel and a source tarball
+        run: python3 setup.py sdist
+
+      - name: archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: vm_clockify
+          path: |
+            dist
+
+  # DEPLOY
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  deploy:
+    needs: build
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      # - name: install SSH key
+      #   uses: shimataro/ssh-key-action@v2
+      #   with:
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     known_hosts: "just-a-placeholder-so-we-dont-get-errors"
+      # - name: adding known hosts
+      #   run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      # - name: deploy with rsync
+      #   run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/app/dist/
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: download build result from build step
+        uses: actions/download-artifact@v2
+        with:
+          name: vm_clockify
+
+      - name: un-tar final result
+        run: |
+          tar -xvzf vm_clockify-*.tar.gz
+          rm vm_clockify-*.tar.gz
+
+      - name: install final result
+        run: |
+          pip3 install vm_clockify-*/
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
