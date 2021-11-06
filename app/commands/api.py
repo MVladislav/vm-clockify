@@ -4,7 +4,8 @@ import sys
 import click
 
 from ..service.api_service import ApiService
-from ..utils.config import CLOCKIFY_API_ENDPOINT, CLOCKIFY_API_KEY, CLOCKIFY_API_WORKSPACE_ID, CLOCKIFY_API_USER_ID
+from ..utils.config import (CLOCKIFY_API_ENDPOINT, CLOCKIFY_API_KEY,
+                            CLOCKIFY_API_USER_ID, CLOCKIFY_API_WORKSPACE_ID)
 from ..utils.utils import Context, pass_context
 
 default_split_by = ';'
@@ -17,8 +18,8 @@ default_split_by = ';'
 
 
 @click.group(invoke_without_command=True)
-@click.option('-k', '--api-key', type=str, help='api key for clockify', default=CLOCKIFY_API_KEY)
-@click.option('-e', '--api-endpoint', type=str, help='api endpint', default=CLOCKIFY_API_ENDPOINT)
+@click.option('-k', '--api-key', type=str, help='api key for clockify', default=CLOCKIFY_API_KEY, required=True)
+@click.option('-e', '--api-endpoint', type=str, help='api endpint', default=CLOCKIFY_API_ENDPOINT, required=True)
 @pass_context
 def cli(ctx: Context, api_key: str, api_endpoint: str):
     '''
@@ -68,8 +69,8 @@ def user(ctx: Context):
 
 
 @cli.command()
-@click.option('-w', '--workspace-id', type=str, help='workspace to use', default=CLOCKIFY_API_WORKSPACE_ID)
-@click.option('-u', '--user-id', type=str, help='user to use', default=CLOCKIFY_API_USER_ID)
+@click.option('-w', '--workspace-id', type=str, help='workspace to use', default=CLOCKIFY_API_WORKSPACE_ID, required=True)
+@click.option('-u', '--user-id', type=str, help='user to use', default=CLOCKIFY_API_USER_ID, required=True)
 @click.option('-d', '--days-to-subtract', type=int, help='from now until how much days to collect [7]', default=7)
 @click.option('-p', '--page-size', type=int, help='how much records should loaded (max 5000) [50]', default=50)
 @pass_context
