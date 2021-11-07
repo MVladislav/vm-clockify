@@ -19,14 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ...
 
-## [0.0.1] - 2021-xx-xx
+## [0.0.1] - 2021-11-05
 
 ### Added
 
 - api usage for clockify
   - user
   - time-entries
-- parser for result
+- time-entries
+  - get combined list of work
+  - save into temp, for usage in ex.: youtrack or jira
+- api usage for youtrack
+  - saved file in temp, will imported into youtrack
+- print parsed, for result
   - print times in combined format
     > to use in ex.: youtrack/jira/...
 

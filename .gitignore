@@ -20,6 +20,7 @@
 !SECURITY.md
 !docker-compose.yaml
 !requirements.txt
+!setup.cfg
 !setup.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
