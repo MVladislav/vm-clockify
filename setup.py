@@ -111,5 +111,5 @@ setup(
     entry_points=f"""
         [console_scripts]
         {PROJECT_NAME_SLUG}=app.main:cli
-    """,
+    """
 )

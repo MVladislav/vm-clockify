@@ -49,8 +49,12 @@ class Context:
         self.print_only_mode = None
 
         # for clockify
-        self.api_key = None
-        self.api_endpoint = None
+        self.api_clockify_key = None
+        self.api_clockify_endpoint = None
+
+        # for youtrack
+        self.api_youtrack_key = None
+        self.api_youtrack_endpint = None
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
@@ -344,10 +348,14 @@ class Utils:
 
     def uri_validator(self, url: str):
         try:
+            if url.endswith('/'):
+                url = url[:-1]
             result = urlparse(url)
-            return all([result.scheme, result.netloc])
+            if all([result.scheme, result.netloc]):
+                return url
         except:
-            return False
+            pass
+        return False
 
     # --------------------------------------------------------------------------
     #
@@ -365,7 +373,8 @@ class Utils:
 
             if self.ctx.progress.get(id) is None:
                 self.ctx.progress[id] = ProgressBar(
-                    widgets=[description, ' [', Timer(), '] ', Bar(marker='O'), ' [', Counter(format='%(value)02d/%(max_value)d'), ']', ' (', ETA(), ') '],
+                    widgets=[description, ' [', Timer(), '] ', Bar(marker='O'), ' [', Counter(
+                        format='%(value)02d/%(max_value)d'), ']', ' (', ETA(), ') '],
                     maxval=maxval).start()
             bar: ProgressBar = self.ctx.progress.get(id)
             bar.update(value=value)

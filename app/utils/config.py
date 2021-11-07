@@ -24,7 +24,7 @@ except ImportError:
         sys.stdout.flush()
         try:
             import subprocess
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", source_to_install])
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-q', source_to_install])
             from starlette.config import Config
             logging.log(logging.INFO, '[DONE]')
         except Exception:
@@ -100,7 +100,14 @@ GEO_DB_ZIP_FNAME = '/GeoIP2LiteCity.tar.gz'
 #
 # ------------------------------------------------------------------------------
 
-CLOCKIFY_API_ENDPOINT: str = config('CLOCKIFY_API_ENDPOINT',  default="https://api.clockify.me/api/v1")
+CLOCKIFY_API_ENDPOINT: str = config('CLOCKIFY_API_ENDPOINT',  default='https://api.clockify.me/api/v1')
 CLOCKIFY_API_KEY: str = config('CLOCKIFY_API_KEY',  default=None)
 CLOCKIFY_API_WORKSPACE_ID: str = config('CLOCKIFY_API_WORKSPACE_ID',  default=None)
 CLOCKIFY_API_USER_ID: str = config('CLOCKIFY_API_USER_ID',  default=None)
+
+CLOCKIFY_TMP_FILE: str = '/tmp/vm_clockify'
+
+# base url needed, entered as option on call
+YOUTRACK_API_ENDPOINT: str = config('YOUTRACK_API_ENDPOINT',  default=None)
+YOUTRACK_API_ENDPOINT_SUFFIX: str = 'youtrack/api'
+YOUTRACK_API_KEY: str = config('YOUTRACK_API_KEY',  default=None)
