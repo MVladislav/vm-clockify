@@ -74,6 +74,9 @@ class ApiService:
             regex_issue = '.*?\[(.*?)\].*?'
             regex_duration = 'PT(?:([0-9]{1,2})H){0,1}(?:([0-9]{1,2})M){0,1}'
 
+            start_day = (datetime.now() - timedelta(days=days_to_subtract)).strftime('%Y-%m-%dT00:00:00.000Z')
+            logging.log(logging.DEBUG, start_day)
+
             headers = {
                 'content-type': 'application/json',
                 'X-Api-Key': self.ctx.api_clockify_key
@@ -83,7 +86,7 @@ class ApiService:
                 'hydrated': True,
                 'consider-duration-format': True,
                 'page-size': page_size,
-                'start': (datetime.now() - timedelta(days=days_to_subtract)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                'start': start_day
             }
 
             path = f'workspaces/{workspaceId}/user/{userId}/time-entries'
