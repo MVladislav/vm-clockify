@@ -4,6 +4,9 @@
     MVladislav
 ```
 
+[![Python DEV CI](https://github.com/MVladislav/vm-clockify/actions/workflows/python-dev.yml/badge.svg)](https://github.com/MVladislav/vm-clockify/actions/workflows/python-dev.yml)
+[![Create Release](https://github.com/MVladislav/vm-clockify/actions/workflows/python-release.yml/badge.svg)](https://github.com/MVladislav/vm-clockify/actions/workflows/python-release.yml)
+
 ---
 
 - [Python CLI Clockify API](#python-cli-clockify-api)
