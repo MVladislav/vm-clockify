@@ -3,7 +3,8 @@ import os
 
 import click
 
-from .utils.config import VERSION
+from .utils.config import (BASE_PATH, LOGGING_LEVEL, LOGGING_VERBOSE,
+                           PROJECT_NAME, VERSION)
 from .utils.logHelper import LogHelper
 from .utils.utils import Context, Utils, pass_context
 
@@ -50,8 +51,7 @@ class ComplexCLI(click.MultiCommand):
             mod = __import__(f'app.commands.{name}', None, None, ['cli'])
             return mod.cli
         except ImportError as e:
-            pass
-            print(e)
+            logging.log(logging.CRITICAL, e)
 
 
 # ------------------------------------------------------------------------------
@@ -65,14 +65,15 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], ignore_unknown_optio
 
 @click.command(cls=ComplexCLI, context_settings=CONTEXT_SETTINGS)
 @click.version_option(VERSION)
-@click.option('-v', '--verbose', count=True, help='Enables verbose mode', default=None)
-@click.option('--home', type=click.Path(writable=True), help='home path to save scannes', default=None)
-@click.option('-p', '--project', type=str, help='project name to store result in', default=None)
-@click.option('-dsp', '--disable-split-project', is_flag=True, help='disable splitting folder struct by project')
-@click.option('-dsh', '--disable-split-host', is_flag=True, help='disable splitting folder struct by host')
-@click.option('-pom', '--print-only-mode', is_flag=True, help='command wil only printed and not run')
+@click.option('-v', '--verbose', count=True, help=f'Enables verbose mode [{LOGGING_VERBOSE}]', default=LOGGING_VERBOSE)
+@click.option('--home', type=click.Path(writable=True), help=f'home path to save scannes [{BASE_PATH}]', default=BASE_PATH)
+@click.option('-p', '--project', type=str, help=f'project name to store result in [{PROJECT_NAME}]', default=PROJECT_NAME)
+@click.option('-dsp', '--disable-split-project', is_flag=True, help='disable splitting folder struct by project [false]')
+@click.option('-dsh', '--disable-split-host', is_flag=True, help='disable splitting folder struct by host [false]')
+@click.option('-pom', '--print-only-mode', is_flag=True, help='command will only printed and not run [false]')
 @pass_context
-def cli(ctx: Context, verbose, home, project, disable_split_project, disable_split_host, print_only_mode):
+def cli(ctx: Context, verbose: int, home: str, project: str,
+        disable_split_project: bool, disable_split_host: bool, print_only_mode: bool):
     '''
         Welcome to {PROJECT_NAME}
 
@@ -80,7 +81,7 @@ def cli(ctx: Context, verbose, home, project, disable_split_project, disable_spl
     '''
 
     # INIT: log helper global
-    LogHelper(logging_verbose=verbose)
+    LogHelper(logging_verbose=verbose, logging_level=LOGGING_LEVEL)
 
     logging.log(logging.DEBUG, 'init start_up...')
 
@@ -88,12 +89,8 @@ def cli(ctx: Context, verbose, home, project, disable_split_project, disable_spl
     ctx.utils = Utils(ctx)
 
     # SET: default global values
-    if verbose != None:
-        ctx.logging_verbose = verbose
-    if project != None:
-        ctx.project = project
-    if home != None:
-        ctx.base_path = home
+    ctx.project = project
+    ctx.base_path = home
     ctx.disable_split_project = disable_split_project
     ctx.disable_split_host = disable_split_host
     ctx.print_only_mode = print_only_mode

@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 from datetime import datetime
 from typing import Dict
 
@@ -7,7 +8,7 @@ import requests
 
 from ..utils.config import YOUTRACK_API_ENDPOINT_SUFFIX
 from ..utils.utils import Context, Utils
-from .api_service import IssueTime
+from .api_clockify_service import IssueTime
 
 # ------------------------------------------------------------------------------
 #
@@ -25,9 +26,13 @@ class ApiYoutrackService:
     # --------------------------------------------------------------------------
 
     def __init__(self, ctx: Context):
-        self.ctx: Context = ctx
-        self.utils: Utils = self.ctx.utils
-        logging.log(logging.DEBUG, 'Youtrack API is initiated')
+        if ctx is not None and ctx.utils is not None:
+            self.ctx: Context = ctx
+            self.utils: Utils = ctx.utils
+            logging.log(logging.DEBUG, 'youtrack-api-service is initiated')
+        else:
+            logging.log(logging.ERROR, "context is not set")
+            sys.exit(1)
 
     # --------------------------------------------------------------------------
     #
@@ -49,8 +54,8 @@ class ApiYoutrackService:
 
             with requests.Session() as session:
                 for key, issue in issues.items():
-                    if not key.startswith('-> sum:'):
-                        current_day = datetime.strptime(issue.date, format_date_day)
+                    if not key.startswith('-> sum:') and issue.date is not None:
+                        current_day: datetime = datetime.strptime(issue.date, format_date_day)
                         date = int(current_day.strftime('%s'))*1000
                         description = '\n- '.join(issue.description)
                         description = f'- {description}'

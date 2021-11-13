@@ -12,6 +12,8 @@ echo '* Copyright of MVladislav, 2021                                *'
 echo '* https://mvladislav.online                                    *'
 echo '* https://github.com/MVladislav                                *'
 echo '****************************************************************'
+echo '* KONS                                                         *'
+echo '****************************************************************'
 echo ''
 
 exit 0

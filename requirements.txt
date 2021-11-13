@@ -8,3 +8,4 @@ progressbar
 
 maxminddb
 requests
+types-requests

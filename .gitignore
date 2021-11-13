@@ -7,21 +7,28 @@
 !.vscode/**
 !app/
 !app/**
-!scripts/**
 !scripts/
+!scripts/**
+!tests/
+!tests/**
 
 !.dockerignore
+!.env_project
 !.env_template
+!.pre-commit-config.yaml
 !.gitignore
 !CHANGELOG.md
 !Dockerfile
 !LICENCE
+!pyproject.toml
 !README.md
 !SECURITY.md
 !docker-compose.yaml
+!requirements_dev.txt
 !requirements.txt
 !setup.cfg
 !setup.py
+!tox.ini
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

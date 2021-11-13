@@ -1,17 +1,16 @@
-"""
+'''
     will setup the project, by install it local
     with needed dependencies
-"""
-import re
-import unicodedata
+'''
+import os
 from subprocess import check_call
 
 from setuptools import find_packages, setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
-from app.utils.config import (AUTHOR, AUTHOR_EMAIL, LICENSE, PROJECT_NAME,
-                              VERSION)
+PROJECT_NAME: str = os.getenv('PROJECT_NAME', 'vm_clockify')
+VERSION: str = os.getenv('VERSION', '0.0.1')
 
 # ------------------------------------------------------------------------------
 #
@@ -21,9 +20,9 @@ from app.utils.config import (AUTHOR, AUTHOR_EMAIL, LICENSE, PROJECT_NAME,
 
 
 class PostDevelopCommand(develop):
-    """
+    '''
         Post-installation for development mode.
-    """
+    '''
 
     def run(self):
         check_call(['/bin/bash', './scripts/setup-dev.sh'])
@@ -31,9 +30,9 @@ class PostDevelopCommand(develop):
 
 
 class PostInstallCommand(install):
-    """
+    '''
         Post-installation for installation mode.
-    """
+    '''
 
     def run(self):
         check_call(['/bin/bash', './scripts/setup.sh'])
@@ -47,22 +46,22 @@ class PostInstallCommand(install):
 
 
 def read_long_description():
-    """
+    '''
         load the readme to add as long description
-    """
-    with open("README.md", "r", encoding="utf-8") as fh:
+    '''
+    with open('README.md', 'r', encoding='utf-8') as fh:
         long_description = fh.read()
     return long_description
 
 
 def read_requirements():
-    """
+    '''
         load and read the dependencies
         from the requirements.txt file
         and return them as a list
-    """
-    with open("requirements.txt", "r", encoding="utf-8") as req:
-        requirements = req.read().split("\n")
+    '''
+    with open('requirements.txt', 'r', encoding='utf-8') as req:
+        requirements = req.read().split('\n')
     return requirements
 
 # ------------------------------------------------------------------------------
@@ -73,6 +72,9 @@ def read_requirements():
 
 
 def slugify(value, allow_unicode=False):
+    import re
+    import unicodedata
+
     value = str(value)
     if allow_unicode:
         value = unicodedata.normalize('NFKC', value)
@@ -92,12 +94,12 @@ PROJECT_NAME_SLUG = slugify(PROJECT_NAME)
 setup(
     name=PROJECT_NAME,
     version=VERSION,
-    license=LICENSE,
+    license='GNU AGPLv3',
     description=PROJECT_NAME,
     long_description=read_long_description(),
-    long_description_content_type="text/markdown",
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
+    long_description_content_type='text/markdown',
+    author='MVladislav',
+    author_email='info@mvladislav.online',
     packages=find_packages(),
     data_files=[('', ['requirements.txt', 'scripts/setup.sh', 'scripts/setup-dev.sh'])],
     include_package_data=True,
@@ -106,10 +108,10 @@ setup(
         'install': PostInstallCommand,
     },
     install_requires=read_requirements(),
-    python_requires=">=3.8",
+    python_requires='>=3.8',
     zip_safe=True,
-    entry_points=f"""
+    entry_points=f'''
         [console_scripts]
         {PROJECT_NAME_SLUG}=app.main:cli
-    """
+    ''',
 )

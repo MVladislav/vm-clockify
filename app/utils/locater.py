@@ -5,7 +5,7 @@ import shutil
 import socket
 import sys
 import tarfile
-from typing import Dict
+from typing import Union
 
 import maxminddb
 import requests
@@ -30,13 +30,19 @@ class Locator:
             locate.query()
     """
 
-    def __init__(self, ctx: Context, url: str = None, ip: str = None, data_file: str = None):
-        self.utils: Utils = ctx.utils
-        self.url = url
-        self.ip = ip
-        self.path = self.utils.create_service_folder(f'GeoIP', ip)
-        self.data_file = data_file
-        self.target = ''
+    def __init__(self, ctx: Context,
+                 url: Union[str, None] = None, ip: Union[str, None] = None,
+                 data_file: Union[str, None] = None):
+        if ctx is not None and ctx.utils is not None:
+            self.utils: Utils = ctx.utils
+            self.url = url
+            self.ip = ip
+            self.path = self.utils.create_service_folder('GeoIP', ip)
+            self.data_file = data_file
+            self.target = ''
+        else:
+            logging.log(logging.ERROR, "context is not set")
+            sys.exit(1)
 
     def check_database(self) -> None:
         try:
@@ -117,10 +123,13 @@ class Locator:
             try:
                 logging.log(logging.INFO, f'Querying for Records of {self.target}')
 
-                with maxminddb.open_database(self.data_file) as reader:
-                    data: Dict = reader.get(self.target)
-                    pprint.pprint(data)
-                    logging.log(logging.INFO, 'Query Complete!')
+                if self.data_file is not None:
+                    with maxminddb.open_database(self.data_file) as reader:
+                        data = reader.get(self.target)
+                        pprint.pprint(data)
+                        logging.log(logging.INFO, 'Query Complete!')
+                else:
+                    logging.log(logging.WARNING, 'data file is not set correct')
             except Exception as ex:
                 logging.log(logging.WARNING, 'Failed to Retrieve Records', ex)
                 return

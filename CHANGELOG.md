@@ -13,7 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- ...
+- time-entries
+  - get combined list of work
+  - save into temp, for usage in ex.: youtrack or jira
+- api usage for youtrack
+  - saved file in temp, will imported into youtrack
+- improve code
 
 ### Removed
 
@@ -26,12 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - api usage for clockify
   - user
   - time-entries
-- time-entries
-  - get combined list of work
-  - save into temp, for usage in ex.: youtrack or jira
-- api usage for youtrack
-  - saved file in temp, will imported into youtrack
-- print parsed, for result
+- parser for result
   - print times in combined format
     > to use in ex.: youtrack/jira/...
 
