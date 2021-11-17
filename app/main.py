@@ -4,7 +4,7 @@ import os
 import click
 
 from .utils.config import (BASE_PATH, LOGGING_LEVEL, LOGGING_VERBOSE,
-                           PROJECT_NAME, VERSION)
+                           PROJECT_NAME)
 from .utils.logHelper import LogHelper
 from .utils.utils import Context, Utils, pass_context
 
@@ -64,16 +64,32 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], ignore_unknown_optio
 
 
 @click.command(cls=ComplexCLI, context_settings=CONTEXT_SETTINGS)
-@click.version_option(VERSION)
-@click.option('-v', '--verbose', count=True, help=f'Enables verbose mode [{LOGGING_VERBOSE}]', default=LOGGING_VERBOSE)
-@click.option('--home', type=click.Path(writable=True), help=f'home path to save scannes [{BASE_PATH}]', default=BASE_PATH)
-@click.option('-p', '--project', type=str, help=f'project name to store result in [{PROJECT_NAME}]', default=PROJECT_NAME)
-@click.option('-dsp', '--disable-split-project', is_flag=True, help='disable splitting folder struct by project [false]')
-@click.option('-dsh', '--disable-split-host', is_flag=True, help='disable splitting folder struct by host [false]')
-@click.option('-pom', '--print-only-mode', is_flag=True, help='command will only printed and not run [false]')
+@click.option('-v', '--verbose', count=True,
+              help=f'Enables verbose mode [{LOGGING_VERBOSE}]', default=LOGGING_VERBOSE)
+@click.option('-l', '--logging-level',
+              type=click.Choice(
+                  ['CRITICAL', 'ERROR', 'WARNING', 'SUCCESS',
+                   'NOTICE', 'INFO', 'VERBOSE', 'DEBUG', 'SPAM']
+              ),
+              help=f'which log level to use [{LOGGING_LEVEL}]', default=LOGGING_LEVEL)
+@click.option('--home', type=click.Path(writable=True),
+              help=f'home path to save scannes [{BASE_PATH}]', default=BASE_PATH)
+@click.option('-p', '--project', type=str,
+              help=f'project name to store result in [{PROJECT_NAME}]', default=PROJECT_NAME)
+@click.option('-dsp', '--disable-split-project', is_flag=True,
+              help='disable splitting folder struct by project [false]')
+@click.option('-dsh', '--disable-split-host', is_flag=True,
+              help='disable splitting folder struct by host [false]')
+@click.option('-pom', '--print-only-mode', is_flag=True,
+              help='command will only printed and not run [false]')
+@click.option('-s', '--sudo', is_flag=True,
+              help='append sudo for command which need it [false]')
+@click.option('-t', '--terminal-read-mode', is_flag=True,
+              help='print on subprocess stdout also direct to console [false]')
 @pass_context
-def cli(ctx: Context, verbose: int, home: str, project: str,
-        disable_split_project: bool, disable_split_host: bool, print_only_mode: bool):
+def cli(ctx: Context, verbose: int, logging_level: str, home: str, project: str,
+        disable_split_project: bool, disable_split_host: bool, print_only_mode: bool, sudo: bool,
+        terminal_read_mode: bool):
     '''
         Welcome to {PROJECT_NAME}
 
@@ -81,7 +97,7 @@ def cli(ctx: Context, verbose: int, home: str, project: str,
     '''
 
     # INIT: log helper global
-    LogHelper(logging_verbose=verbose, logging_level=LOGGING_LEVEL)
+    LogHelper(logging_verbose=verbose, logging_level=logging_level)
 
     logging.log(logging.DEBUG, 'init start_up...')
 
@@ -94,5 +110,9 @@ def cli(ctx: Context, verbose: int, home: str, project: str,
     ctx.disable_split_project = disable_split_project
     ctx.disable_split_host = disable_split_host
     ctx.print_only_mode = print_only_mode
+    ctx.use_sudo = ['sudo'] if sudo else []
+    ctx.terminal_read_mode = terminal_read_mode
+    ctx.logging_verbose = verbose
+    ctx.logging_level = logging_level
 
     ctx.utils.update(ctx=ctx)

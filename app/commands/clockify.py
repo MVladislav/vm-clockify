@@ -15,7 +15,7 @@ from ..utils.utils import Context, pass_context
 # ------------------------------------------------------------------------------
 
 
-@click.group(invoke_without_command=True)
+@click.group()
 @click.option('-k', '--key', type=str,
               help=f'api key for clockify [{CLOCKIFY_API_KEY}]', default=CLOCKIFY_API_KEY, required=True)
 @click.option('-e', '--endpoint', type=str,
@@ -25,16 +25,12 @@ def cli(ctx: Context, key: str, endpoint: str):
     '''
         This is clockify api usage command
     '''
-    if ctx.utils is not None:
-        if ctx.utils.uri_validator(endpoint):
-            ctx.api_clockify_key = key
-            ctx.api_clockify_endpoint = endpoint
-            ctx.service = ApiClockifyService(ctx)
-        else:
-            logging.log(logging.WARNING, f'endpoint "{endpoint}" is not a valid url format')
-            sys.exit(2)
+    if ctx.utils.uri_validator(endpoint):
+        ctx.api_clockify_key = key
+        ctx.api_clockify_endpoint = endpoint
+        ctx.service = ApiClockifyService(ctx)
     else:
-        logging.log(logging.ERROR, 'utils are not set')
+        logging.log(logging.WARNING, f'endpoint "{endpoint}" is not a valid url format')
         sys.exit(2)
 
 

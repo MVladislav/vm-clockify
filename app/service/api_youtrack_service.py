@@ -26,13 +26,9 @@ class ApiYoutrackService:
     # --------------------------------------------------------------------------
 
     def __init__(self, ctx: Context):
-        if ctx is not None and ctx.utils is not None:
-            self.ctx: Context = ctx
-            self.utils: Utils = ctx.utils
-            logging.log(logging.DEBUG, 'youtrack-api-service is initiated')
-        else:
-            logging.log(logging.ERROR, "context is not set")
-            sys.exit(1)
+        self.ctx: Context = ctx
+        self.utils: Utils = ctx.utils
+        logging.log(logging.DEBUG, 'youtrack-api-service is initiated')
 
     # --------------------------------------------------------------------------
     #
@@ -51,6 +47,7 @@ class ApiYoutrackService:
                 'Authorization': f'Bearer {self.ctx.api_youtrack_key}',
                 'Cache-Control': 'no-cache',
             }
+            print(headers)
 
             with requests.Session() as session:
                 for key, issue in issues.items():
@@ -87,6 +84,7 @@ class ApiYoutrackService:
                         else:
                             logging.log(logging.ERROR, res.status_code)
                             logging.log(logging.ERROR, res.text)
+                            sys.exit(1)
 
         except Exception as e:
             logging.log(logging.CRITICAL, e, exc_info=True)
