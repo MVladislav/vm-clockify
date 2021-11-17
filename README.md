@@ -4,33 +4,39 @@
     MVladislav
 ```
 
+[![Python DEV CI](https://github.com/MVladislav/vm-clockify/actions/workflows/python-dev.yml/badge.svg)](https://github.com/MVladislav/vm-clockify/actions/workflows/python-dev.yml)
+[![Create Release](https://github.com/MVladislav/vm-clockify/actions/workflows/python-release.yml/badge.svg)](https://github.com/MVladislav/vm-clockify/actions/workflows/python-release.yml)
+
 ---
 
 - [Python CLI Clockify API](#python-cli-clockify-api)
   - [information](#information)
+    - [clockify task-name and project-name usage](#clockify-task-name-and-project-name-usage)
     - [config](#config)
   - [install](#install)
     - [DEBUG](#debug)
-  - [run](#run)
-    - [docker](#docker)
+  - [code quality and git](#code-quality-and-git)
+    - [pre-commit](#pre-commit)
+    - [manual test run](#manual-test-run)
 
 ---
 
-project to use api from [clockify](https://clockify.me/developers-api) to collect worktime
+project to use api from [clockify](https://clockify.me/developers-api) to collect work-time
 
 in a combined way by `[day, project, task]`
 
 ## information
 
-to run an print in best mode, only if you use services like **youtrack** or **jira**,
+### clockify task-name and project-name usage
 
-write the **issue** name into **task** or **project** in brackets, like:
+this script will parse the **task**-name and **project**-name usage and search for brackets like `[(.*?)]`
+where you can write **issue-id** in it, for example:
 
 ```txt
 some description task [ISSUE-666]
 ```
 
-this will be parsed and printed
+This **issue-id** can than be used to import the time into services like youtrack
 
 ### config
 
@@ -43,7 +49,7 @@ $cp .env_template .env
 ## install
 
 ```sh
-$pip3 install starlette && pip3 install .
+$pip3 install .
 ```
 
 ### DEBUG
@@ -51,16 +57,27 @@ $pip3 install starlette && pip3 install .
 ```sh
 $python3 -m venv ./venv
 $source venv/bin/activate
-$pip3 install starlette && pip3 install -v --editable .
+$pip3 install -v --editable .
 ```
 
-## run
+---
 
-### docker
+## code quality and git
 
-run **docker-compose** build and up
+### pre-commit
+
+run:
 
 ```sh
-$DOCKER_BUILDKIT=1 docker-compose build
-$DOCKER_BUILDKIT=1 docker-compose up
+$git config --local core.hooksPath .git/hooks
+$pre-commit install
+```
+
+### manual test run
+
+```sh
+$mypy app
+$flake8 app
+$pytest --cov=tests
+$tox
 ```

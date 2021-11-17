@@ -4,7 +4,8 @@ coloredlogs
 verboselogs
 string-color
 progress
-progressbar2
+progressbar
 
 maxminddb
 requests
+types-requests

@@ -22,10 +22,11 @@ env:
   GIT_REPOSITORY_NAME: "${{ github.event.repository.name }}"
 
   PROJECT_NAME: vm_clockify
-  ENV_MODE: "${{ contains(github.ref, 'main') && 'PROD' || 'KONS' }}"
   VERSION: "0.0.1"
+  ENV_MODE: "${{ contains(github.ref, 'main') && 'PROD' || 'KONS' }}"
   LOGGING_LEVEL: "${{ contains(github.ref, 'main') && 'INFO' || 'DEBUG' }}"
   LOGGING_VERBOSE: "${{ contains(github.ref, 'main') && 2 || 3 }}"
+  VM_BASE_PATH: /tmp
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -35,7 +36,14 @@ jobs:
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python-version:
+          - 3.8
+          - 3.9
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -44,17 +52,24 @@ jobs:
 
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      - name: set up Python 3.9
+      - name: set up python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
 
       - name: install dependencies
         run: |
           python3 -m pip install --upgrade pip
           pip3 install pylint flake8 pytest
-          # install requirements if no setup.py is existing, else it will insall in next step
+          # install requirements if no setup.py is existing, else it will install in next step
           if [[ -f requirements.txt && ! -f setup.py ]]; then pip3 install -r requirements.txt; fi
+          pip3 install -r requirements_dev.txt
+          pip3 install tox-gh-actions
+
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      - name: test with tox
+        run: tox | tee tox.log
 
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -66,16 +81,16 @@ jobs:
 
       - name: analyzing the code with pylint
         run: |
-          python3 -m pylint --rcfile=setup.cfg `find -regextype egrep -regex '(.*.py)$'` |
+          python3 -m pylint --rcfile=setup.cfg `find app -regextype egrep -regex '(.*.py)$'` |
           tee pylint.log
 
       - name: lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics |
+          flake8 app --count --select=E9,F63,F7,F82 --show-source --statistics |
           tee flake8_1.log
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics |
+          flake8 app --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics |
           tee flake8_2.log
 
       - name: test with pytest
@@ -83,11 +98,12 @@ jobs:
           python3 -m pytest |
           tee pytest.log
 
-      - name: upload flake8_1.log as artifact
+      - name: upload all logs as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: python test report
+          name: python test reports
           path: |
+            tox.log
             pylint.log
             flake8_1.log
             flake8_2.log
@@ -129,7 +145,7 @@ jobs:
       - name: archive production artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: vm_clockify
+          name: ${{ env.PROJECT_NAME }}
           path: |
             dist
 
@@ -170,15 +186,14 @@ jobs:
       - name: download build result from build step
         uses: actions/download-artifact@v2
         with:
-          name: vm_clockify
+          name: ${{ env.PROJECT_NAME }}
 
       - name: un-tar final result
         run: |
-          tar -xvzf vm_clockify-*.tar.gz
-          rm vm_clockify-*.tar.gz
+          tar -xvzf ${{ env.PROJECT_NAME }}-*.tar.gz
+          rm ${{ env.PROJECT_NAME }}-*.tar.gz
 
       - name: install final result
-        run: |
-          pip3 install vm_clockify-*/
+        run: pip3 install ${{ env.PROJECT_NAME }}-*/
 
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
