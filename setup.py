@@ -10,7 +10,7 @@ from setuptools.command.develop import develop
 from setuptools.command.install import install
 
 PROJECT_NAME: str = os.getenv('PROJECT_NAME', 'vm_clockify')
-VERSION: str = os.getenv('VERSION', '0.0.1')
+VERSION: str = os.getenv('VERSION', '0.0.2')
 
 # ------------------------------------------------------------------------------
 #
