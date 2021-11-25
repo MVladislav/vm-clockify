@@ -1,4 +1,5 @@
 import logging
+import os
 import pickle
 import sys
 from typing import Dict
@@ -56,7 +57,11 @@ def upload(ctx: Context):
         issues: Dict[str, IssueTime] = {}
         with open(f'{ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}', 'rb') as f:
             issues = pickle.load(f)
+
         service.times(issues=issues)
+
+        if os.path.exists(f'{ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}'):
+            os.remove(f'{ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}')
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f'process interupted! ({k})')
         sys.exit(5)
