@@ -79,9 +79,11 @@ class ApiClockifyService:
 
             tmp_day: Union[datetime, None] = datetime.now()
             start_day: Union[str, None] = None
+            end_day: Union[str, None] = tmp_day.strftime('%Y-%m-%dT23:59:59.000Z')
             if specific_day is not None:
                 tmp_day = datetime.strptime(specific_day, format_date_day)
-                days_to_subtract = 0
+                end_day = tmp_day.strftime('%Y-%m-%dT23:59:59.000Z')
+                # days_to_subtract = 0
             if tmp_day is not None:
                 start_day = (tmp_day - timedelta(days=days_to_subtract)).strftime('%Y-%m-%dT00:00:00.000Z')
             if start_day is not None:
@@ -96,7 +98,8 @@ class ApiClockifyService:
                     ('hydrated', True),
                     ('consider-duration-format', True),
                     ('page-size', page_size),
-                    ('start', start_day)
+                    ('start', start_day),
+                    ('end', end_day)
                 ]
 
                 path = f'workspaces/{workspaceId}/user/{userId}/time-entries'
@@ -220,6 +223,7 @@ class ApiClockifyService:
                         return results
                     else:
                         logging.log(logging.ERROR, res.status_code)
+                        logging.log(logging.ERROR, res.text)
                 # logging.log(logging.DEBUG,json.dumps(parsed, indent=4, sort_keys=False))
             else:
                 logging.log(logging.ERROR, 'start day can not be created')
