@@ -6,8 +6,7 @@ from typing import Dict
 
 import requests
 
-from ..utils.config import YOUTRACK_API_ENDPOINT_SUFFIX
-from ..utils.utils import Context, Utils
+from ..utils.config import settings
 from .api_clockify_service import IssueTime
 
 # ------------------------------------------------------------------------------
@@ -25,9 +24,7 @@ class ApiYoutrackService:
     #
     # --------------------------------------------------------------------------
 
-    def __init__(self, ctx: Context):
-        self.ctx: Context = ctx
-        self.utils: Utils = ctx.utils
+    def __init__(self):
         logging.log(logging.DEBUG, 'youtrack-api-service is initiated')
 
     # --------------------------------------------------------------------------
@@ -44,7 +41,7 @@ class ApiYoutrackService:
             headers = {
                 'content-type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': f'Bearer {self.ctx.api_youtrack_key}',
+                'Authorization': f'Bearer {settings.YOUTRACK_API_KEY}',
                 'Cache-Control': 'no-cache',
             }
             print(headers)
@@ -76,7 +73,7 @@ class ApiYoutrackService:
 
                         path = f'issues/{issue.issue[0]}/timeTracking/workItems'
 
-                        res = session.post(f'{self.ctx.api_youtrack_endpint}/{YOUTRACK_API_ENDPOINT_SUFFIX}/{path}',
+                        res = session.post(f'{settings.YOUTRACK_API_ENDPOINT}/{settings.YOUTRACK_API_ENDPOINT_SUFFIX}/{path}',
                                            headers=headers, json=body)
                         if res.status_code == 200:
                             parsed = json.loads(res.text)

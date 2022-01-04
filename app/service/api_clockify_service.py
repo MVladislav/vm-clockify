@@ -8,8 +8,8 @@ from typing import Any, Dict, Iterable, List, Match, Tuple, Union
 import requests
 import verboselogs
 
-from ..utils.config import CLOCKIFY_TMP_FILE
-from ..utils.utils import Context, Utils
+from ..utils.config import settings
+from ..utils.utilsFolderHelper import create_service_folder
 
 # ------------------------------------------------------------------------------
 #
@@ -36,9 +36,7 @@ class ApiClockifyService:
     #
     # --------------------------------------------------------------------------
 
-    def __init__(self, ctx: Context):
-        self.ctx: Context = ctx
-        self.utils: Utils = ctx.utils
+    def __init__(self):
         logging.log(logging.DEBUG, 'clockify-api-service is initiated')
 
     # --------------------------------------------------------------------------
@@ -51,11 +49,11 @@ class ApiClockifyService:
         try:
             headers = {
                 'content-type': 'application/json',
-                'X-Api-Key': self.ctx.api_clockify_key
+                'X-Api-Key': settings.CLOCKIFY_API_KEY
             }
 
             with requests.Session() as session:
-                res = session.get(f'{self.ctx.api_clockify_endpoint}/user', headers=headers)
+                res = session.get(f'{settings.CLOCKIFY_API_ENDPOINT}/user', headers=headers)
                 parsed = json.loads(res.text)
                 logging.log(logging.INFO, f'USER ID             : {parsed["id"]}')
                 logging.log(logging.INFO, f'ACTIVE WORKSPACE    : {parsed["activeWorkspace"]}')
@@ -91,7 +89,7 @@ class ApiClockifyService:
 
                 headers = {
                     'content-type': 'application/json',
-                    'X-Api-Key': self.ctx.api_clockify_key
+                    'X-Api-Key': settings.CLOCKIFY_API_KEY
                 }
 
                 params: Iterable[Tuple[str, Union[str, bytes, int, float]]] = [
@@ -105,7 +103,7 @@ class ApiClockifyService:
                 path = f'workspaces/{workspaceId}/user/{userId}/time-entries'
 
                 with requests.Session() as session:
-                    res = session.get(f'{self.ctx.api_clockify_endpoint}/{path}', headers=headers, params=params)
+                    res = session.get(f'{settings.CLOCKIFY_API_ENDPOINT}/{path}', headers=headers, params=params)
 
                     if res.status_code == 200:
                         parsed = json.loads(res.text)
@@ -193,7 +191,7 @@ class ApiClockifyService:
                                     else:
                                         logging.log(logging.WARNING, 'failed to get or parse start date')
 
-                        with open(f'{self.ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}', 'wb') as f:
+                        with open(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}', 'wb') as f:
                             pickle.dump(results, f)
 
                         for key, value in results.items():

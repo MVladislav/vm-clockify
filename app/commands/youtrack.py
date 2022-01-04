@@ -8,9 +8,9 @@ import click
 
 from ..service.api_clockify_service import IssueTime
 from ..service.api_youtrack_service import ApiYoutrackService
-from ..utils.config import (CLOCKIFY_TMP_FILE, YOUTRACK_API_ENDPOINT,
-                            YOUTRACK_API_KEY)
-from ..utils.utils import Context, pass_context
+from ..utils.config import settings
+from ..utils.utilsFolderHelper import create_service_folder
+from ..utils.utilsHelper import Context, pass_context, uri_validator
 
 # ------------------------------------------------------------------------------
 #
@@ -21,18 +21,18 @@ from ..utils.utils import Context, pass_context
 
 @click.group()
 @click.option('-k', '--key', type=str,
-              help=f'api key for youtrack [{YOUTRACK_API_KEY}]', default=YOUTRACK_API_KEY, required=True)
+              help=f'api key for youtrack [{settings.YOUTRACK_API_KEY}]', default=settings.YOUTRACK_API_KEY, required=True)
 @click.option('-e', '--endpoint', type=str,
-              help=f'only base url [{YOUTRACK_API_ENDPOINT}]', default=YOUTRACK_API_ENDPOINT, required=True)
+              help=f'only base url [{settings.YOUTRACK_API_ENDPOINT}]', default=settings.YOUTRACK_API_ENDPOINT, required=True)
 @pass_context
 def cli(ctx: Context, key: str, endpoint: str):
     '''
         This is youtrack-api usage command
     '''
-    if ctx.utils.uri_validator(endpoint):
-        ctx.api_youtrack_key = key
-        ctx.api_youtrack_endpint = endpoint
-        ctx.service = ApiYoutrackService(ctx)
+    if uri_validator(endpoint):
+        settings.YOUTRACK_API_KEY = key
+        settings.YOUTRACK_API_ENDPOINT = endpoint
+        ctx.service = ApiYoutrackService()
     else:
         logging.log(logging.WARNING, f'endpoint "{endpoint}" is not a valid url format')
         sys.exit(2)
@@ -55,13 +55,13 @@ def upload(ctx: Context):
         service: ApiYoutrackService = ctx.service
 
         issues: Dict[str, IssueTime] = {}
-        with open(f'{ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}', 'rb') as f:
+        with open(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}', 'rb') as f:
             issues = pickle.load(f)
 
         service.times(issues=issues)
 
-        if os.path.exists(f'{ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}'):
-            os.remove(f'{ctx.utils.create_service_folder()}/{CLOCKIFY_TMP_FILE}')
+        if os.path.exists(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}'):
+            os.remove(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}')
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f'process interupted! ({k})')
         sys.exit(5)
