@@ -25,14 +25,14 @@ class ApiYoutrackService:
     def __init__(self):
         logging.log(logging.DEBUG, 'youtrack-api-service is initiated')
 
-
     # --------------------------------------------------------------------------
     #
     #
     #
     # --------------------------------------------------------------------------
     # https://www.jetbrains.com/help/youtrack/devportal/resource-api-issues-issueID-timeTracking-workItems.html#create-IssueWorkItem-method-sample
-    def times(self, issues: Dict[str, IssueTime]):
+
+    def upload(self, issues: Dict[str, IssueTime]):
         try:
             format_date_day = '%Y-%m-%d'
             headers = {

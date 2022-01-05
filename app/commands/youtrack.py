@@ -49,8 +49,6 @@ def cli(ctx: Context, key: str, endpoint: str):
         sys.exit(2)
 
 
-
-
 # ------------------------------------------------------------------------------
 #
 #
@@ -68,7 +66,7 @@ def upload(ctx: Context):
         issues: Dict[str, IssueTime] = {}
         with open(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}', 'rb') as f:
             issues = pickle.load(f)
-        service.times(issues=issues)
+        service.upload(issues=issues)
         if os.path.exists(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}'):
             os.remove(f'{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}')
     except KeyboardInterrupt as k:

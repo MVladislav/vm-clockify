@@ -20,6 +20,8 @@ from ..utils.utilsFolderHelper import create_service_folder
 class IssueTime:
 
     def __init__(self) -> None:
+        self.project: Union[str, None] = None
+        self.task: Union[str, None] = None
         self.date: Union[str, None] = None
         self.duration: Dict[str, int] = {}
         self.issue: List[str] = []
@@ -162,7 +164,9 @@ class ApiClockifyService:
                                     ] = datetime.strptime(
                                         timeStart, format_date_from
                                     ) if timeStart else None
+                                    # if time can be parsed, start to save the result
                                     if current_timeStart is not None:
+                                        # ----------------------------------------------
                                         # if start date parsed correct, get only current day without time
                                         current_day: str = current_timeStart.strftime(
                                             format_date_day
@@ -187,86 +191,58 @@ class ApiClockifyService:
                                         # ----------------------------------------------
                                         # S1:: for a complet time overview for a day
                                         # SETUP:: id to store collections combined unique
-                                        current_id = f'{prefix_sum} {current_day}'
-                                        # START:: insert or update time per day
-                                        results[current_id] = results.get(
-                                            current_id, IssueTime()
+                                        self.gen_issue(
+                                            results,
+                                            current_id=f'{prefix_sum} {current_day}',
+                                            current_project=current_project,
+                                            current_task=current_task,
+                                            current_day=current_day,
+                                            current_timeDuration=current_timeDuration,
                                         )
-                                        results[current_id].date = current_day
-                                        duration: Dict[str, int]
-                                        if current_timeDuration is not None:
-                                            duration = results[current_id].duration
-                                            duration['h'] = duration.get(
-                                                'h', 0
-                                            ) + current_timeDuration.get(
-                                                'h', 0
-                                            )
-                                            duration['m'] = duration.get(
-                                                'm', 0
-                                            ) + current_timeDuration.get(
-                                                'm', 0
-                                            )
-                                            if duration['m'] >= 60:
-                                                new_hour, new_minutes = self.convert_time_split(
-                                                    duration['m'] * 60
-                                                )
-                                                duration['h'] = duration.get(
-                                                    'h', 0
-                                                ) + new_hour
-                                                duration['m'] = new_minutes
                                         # ----------------------------------------------
                                         # S2:: the issues combined it self
                                         # SETUP:: id to store collections combined unique
-                                        current_id = f'{current_day}_{current_project}_{current_task}'
-                                        # START:: insert or update collections
-                                        results[current_id] = results.get(
-                                            current_id, IssueTime()
+                                        self.gen_issue(
+                                            results,
+                                            current_id=f'{current_day}_{current_project}_{current_task}',
+                                            current_project=current_project,
+                                            current_task=current_task,
+                                            current_day=current_day,
+                                            current_timeDuration=current_timeDuration,
+                                            current_issue=current_issue,
+                                            current_description=current_description,
                                         )
-                                        results[current_id].date = current_day
-                                        if current_timeDuration is not None:
-                                            duration = results[current_id].duration
-                                            duration['h'] = duration.get(
-                                                'h', 0
-                                            ) + current_timeDuration.get(
-                                                'h', 0
-                                            )
-                                            duration['m'] = duration.get(
-                                                'm', 0
-                                            ) + current_timeDuration.get(
-                                                'm', 0
-                                            )
-                                            if duration['m'] >= 60:
-                                                new_hour, new_minutes = self.convert_time_split(
-                                                    duration['m'] * 60
-                                                )
-                                                duration['h'] = duration.get(
-                                                    'h', 0
-                                                ) + new_hour
-                                                duration['m'] = new_minutes
-                                        # results[current_id]['task'] = results[current_id].get("task", current_task)
-                                        # results[current_id]['project'] = results[current_id].get("project", current_project)
-                                        if isinstance(
-                                            current_issue, str
-                                        ) and current_issue not in results[
-                                            current_id
-                                        ].issue:
-                                            results[current_id].issue.append(
-                                                current_issue
-                                            )
-                                            if len(results[current_id].issue) > 1:
-                                                logging.log(
-                                                    logging.WARNING,
-                                                    f'issue "{current_description}" has multiple ids, check this',
-                                                )
-                                        results[current_id].description.append(
-                                            current_description
-                                        )
+                                    # ----------------------------------------------
                                     else:
                                         logging.log(
                                             logging.WARNING,
                                             'failed to get or parse start date',
                                         )
-
+                        # add also a generic buffer issue for not specific work
+                        if settings.WORK_TIME_DEFAULT_ISSUE is not None and settings.WORK_TIME_DEFAULT_COMMENT is not None:
+                            for key, value in results.copy().items():
+                                if key.startswith(prefix_sum):
+                                    opened_rest_time = settings.WORK_TIME_DEFAULT_HOURS - (
+                                        value.duration.get("h", 0) +
+                                        (value.duration.get("m", 0) / 60)
+                                    )
+                                    new_hour, new_minutes = self.convert_time_split(
+                                        opened_rest_time * 60 * 60
+                                    )
+                                    current_timeDuration = {
+                                        'h': new_hour, 'm': new_minutes
+                                    }
+                                    self.gen_issue(
+                                        results,
+                                        current_id=f'{settings.WORK_TIME_DEFAULT_ISSUE}_{value.date}_{value.project}_{value.task}',
+                                        current_project=value.project,
+                                        current_task=value.task,
+                                        current_day=value.date,
+                                        current_timeDuration=current_timeDuration,
+                                        current_issue=settings.WORK_TIME_DEFAULT_ISSUE,
+                                        current_description=settings.WORK_TIME_DEFAULT_COMMENT,
+                                    )
+                        # ------------------------------------------------------
                         # write result to file, to be used later for other api's
                         # example to import it
                         with open(
@@ -274,7 +250,6 @@ class ApiClockifyService:
                             'wb',
                         ) as f:
                             pickle.dump(results, f)
-
                         # print the result for manual check or copy/past usage
                         for key, value in results.items():
                             # print a overview for the complete day work
@@ -288,11 +263,16 @@ class ApiClockifyService:
                                     logging.INFO,
                                     f'  [*] WORKED: {value.duration.get("h",0)}h {value.duration.get("m",0)}m',
                                 )
-                                opened_rest_time = settings.WORK_TIME_DEFAULT_HOURS - \
-                                    (value.duration.get("h", 0) + (value.duration.get("m", 0)/60))
+                                opened_rest_time = settings.WORK_TIME_DEFAULT_HOURS - (
+                                    value.duration.get("h", 0) +
+                                    (value.duration.get("m", 0) / 60)
+                                )
+                                new_hour, new_minutes = self.convert_time_split(
+                                    opened_rest_time * 60 * 60
+                                )
                                 logging.log(
                                     logging.INFO,
-                                    f'  [*] REST  : {opened_rest_time}h',
+                                    f'  [*] REST  : {new_hour}h {new_minutes}m',
                                 )
                                 logging.log(
                                     logging.DEBUG,
@@ -333,10 +313,49 @@ class ApiClockifyService:
             logging.log(logging.CRITICAL, e, exc_info=True)
         return None
 
+    def gen_issue(
+        self,
+        results: Dict[str, IssueTime],
+        current_id: str,
+        current_project: str,
+        current_task: str,
+        current_day: str,
+        current_timeDuration: Dict[str, int],
+        current_issue: Union[str, None] = None,
+        current_description: Union[str, None] = None,
+    ):
+        # START:: insert or update time per day
+        results[current_id] = results.get(current_id, IssueTime())
+        results[current_id].project = current_project
+        results[current_id].task = current_task
+        results[current_id].date = current_day
+        duration: Dict[str, int]
+        if current_timeDuration is not None:
+            duration = results[current_id].duration
+            duration['h'] = duration.get('h', 0) + current_timeDuration.get('h', 0)
+            duration['m'] = duration.get('m', 0) + current_timeDuration.get('m', 0)
+            if duration['m'] >= 60:
+                new_hour, new_minutes = self.convert_time_split(duration['m'] * 60)
+                duration['h'] = duration.get('h', 0) + new_hour
+                duration['m'] = new_minutes
+            if isinstance(current_issue, str) and current_issue not in results[
+                current_id
+            ].issue:
+                results[current_id].issue.append(current_issue)
+                if len(results[current_id].issue) > 1:
+                    logging.log(
+                        logging.WARNING,
+                        f'issue "{current_description}" has multiple ids, check this',
+                    )
+            if isinstance(current_description, str):
+                results[current_id].description.append(current_description)
+            elif isinstance(current_description, list):
+                results[current_id].description.extend(current_description)
+
     def convert_time_split(self, seconds: int) -> Tuple[int, int]:
         seconds = seconds % (24 * 3600)
         hour = seconds // 3600
         seconds %= 3600
         minutes = seconds // 60
         seconds %= 60
-        return (hour, minutes)
+        return (int(hour), int(minutes))
