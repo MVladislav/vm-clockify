@@ -11,24 +11,19 @@ from urllib.parse import urlparse
 
 import click
 import requests
-from app.utils.config import settings
-from progressbar import ETA, Bar, Counter, ProgressBar, Timer
+from progressbar import ProgressBar
+
 
 # ------------------------------------------------------------------------------
 #
 #
 #
 # ------------------------------------------------------------------------------
-
-
 class Context:
-
     progress: Dict[int, ProgressBar] = {}
 
     def __init__(self):
-
         logging.log(logging.DEBUG, 'init context...')
-
         self.service: Any = None
 
 
@@ -67,6 +62,8 @@ def slugify(value: Union[str, None], allow_unicode: bool = False) -> Union[str, 
         )
     value = re.sub(r"[^\w\s-]", "", value.lower())
     return re.sub(r"[-\s]+", "-", value).strip("-_")
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -108,6 +105,8 @@ def is_tool(name: str) -> bool:
     Check whether `name` is on PATH and marked as executable.
     """
     return which(name) is not None
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -164,6 +163,8 @@ def url_checker(url) -> bool:
     except Exception as e:
         logging.log(logging.DEBUG, f"{url}: fails with [{type(e)}] '{e}'")
     return False
+
+
 
 
 # ------------------------------------------------------------------------------

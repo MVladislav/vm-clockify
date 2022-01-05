@@ -69,24 +69,28 @@ class Settings(BaseSettings):
     # CLOCKIFY
     #
     # ------------------------------------------------------------------------------
-
-    CLOCKIFY_API_ENDPOINT: str = config('CLOCKIFY_API_ENDPOINT',  default='https://api.clockify.me/api/v1')
-    CLOCKIFY_API_KEY: Union[str, None] = config('CLOCKIFY_API_KEY',  default=None)
-    CLOCKIFY_API_WORKSPACE_ID: Union[str, None] = config('CLOCKIFY_API_WORKSPACE_ID',  default=None)
-    CLOCKIFY_API_USER_ID: Union[str, None] = config('CLOCKIFY_API_USER_ID',  default=None)
-
+    CLOCKIFY_API_ENDPOINT: str = config(
+        'CLOCKIFY_API_ENDPOINT', default='https://api.clockify.me/api/v1'
+    )
+    CLOCKIFY_API_KEY: Union[str, None] = config('CLOCKIFY_API_KEY', default=None)
+    CLOCKIFY_API_WORKSPACE_ID: Union[str, None] = config(
+        'CLOCKIFY_API_WORKSPACE_ID', default=None
+    )
+    CLOCKIFY_API_USER_ID: Union[str, None] = config(
+        'CLOCKIFY_API_USER_ID', default=None
+    )
     CLOCKIFY_TMP_FILE: str = 'times'
-
     # ------------------------------------------------------------------------------
     #
     # YOUTRACK
     #
     # ------------------------------------------------------------------------------
-
     # base url needed, entered as option on call
-    YOUTRACK_API_ENDPOINT: Union[str, None] = config('YOUTRACK_API_ENDPOINT',  default=None)
+    YOUTRACK_API_ENDPOINT: Union[str, None] = config(
+        'YOUTRACK_API_ENDPOINT', default=None
+    )
     YOUTRACK_API_ENDPOINT_SUFFIX: Union[str, None] = 'youtrack/api'
-    YOUTRACK_API_KEY: Union[str, None] = config('YOUTRACK_API_KEY',  default=None)
+    YOUTRACK_API_KEY: Union[str, None] = config('YOUTRACK_API_KEY', default=None)
 
     # --------------------------------------------------------------------------
     #
@@ -96,12 +100,12 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
 
-    # --------------------------------------------------------------------------
-    #
-    #
-    #
-    # --------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
     def print(self) -> None:
         if self.LOGGING_LEVEL == logging.getLevelName(logging.DEBUG):
             print()
