@@ -66,6 +66,20 @@ class Settings(BaseSettings):
     GEO_DB_ZIP_FNAME = "/GeoIP2LiteCity.tar.gz"
     # ------------------------------------------------------------------------------
     #
+    # GENERAL TIME SETTINGS
+    #
+    # ------------------------------------------------------------------------------
+    WORK_TIME_DEFAULT_HOURS: int = config(
+        "WORK_TIME_DEFAULT_HOURS", cast=int, default=8
+    )
+    WORK_TIME_DEFAULT_ISSUE: Union[str, None] = config(
+        "WORK_TIME_DEFAULT_ISSUE", default=None
+    )
+    WORK_TIME_DEFAULT_COMMENT: Union[str, None] = config(
+        "WORK_TIME_DEFAULT_COMMENT", default=None
+    )
+    # ------------------------------------------------------------------------------
+    #
     # CLOCKIFY
     #
     # ------------------------------------------------------------------------------
@@ -91,21 +105,45 @@ class Settings(BaseSettings):
     )
     YOUTRACK_API_ENDPOINT_SUFFIX: Union[str, None] = 'youtrack/api'
     YOUTRACK_API_KEY: Union[str, None] = config('YOUTRACK_API_KEY', default=None)
+    # ------------------------------------------------------------------------------
+    #
+    # LANDWEHR
+    #
+    # ------------------------------------------------------------------------------
+    LANDWEHR_API_URL: str = config(
+        'LANDWEHR_API_URL'
+    )
+    LANDWEHR_API_ENDPOINT: str = config(
+        'LANDWEHR_API_ENDPOINT', default='/index.php'
+    )
+    LANDWEHR_COMPANY: str = config(
+        'LANDWEHR_COMPANY'
+    )
+    LANDWEHR_MAND_NR: str = config(
+        'LANDWEHR_MAND_NR'
+    )
+    LANDWEHR_USERNAME: str = config(
+        'LANDWEHR_USERNAME'
+    )
+    LANDWEHR_PASSWORD: str = config(
+        'LANDWEHR_PASSWORD'
+    )
 
     # --------------------------------------------------------------------------
     #
     #
     #
     # --------------------------------------------------------------------------
+
     class Config:
         case_sensitive = True
 
+    # --------------------------------------------------------------------------
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
 
-    # --------------------------------------------------------------------------
-    #
-    #
-    #
-    # --------------------------------------------------------------------------
     def print(self) -> None:
         if self.LOGGING_LEVEL == logging.getLevelName(logging.DEBUG):
             print()
