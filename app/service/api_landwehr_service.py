@@ -1,11 +1,10 @@
 import json
 import logging
-from datetime import date
+from datetime import datetime, timedelta
 from typing import Dict, List, Union
 
 import bs4 as bs
 import requests
-import verboselogs
 from requests.models import Response
 from requests.sessions import Session
 
@@ -37,6 +36,7 @@ class ApiLandwehrService:
     SSID: Union[str, None] = None
     format_date_day = '%Y-%m-%d'
     format_date_day_key = '%d.%m.%Y'
+    format_date_time = '%H:%M:%S'
 
     always_worked: Dict[str, any] = None
 
@@ -61,9 +61,9 @@ class ApiLandwehrService:
                     # GET TIME
                     self.get_time(session, year, month)
 
-                    # # ----------------------------------------------------------
-                    # # ADD TIME
-                    # self.add_time(session, auftrag, year, month, day)
+                    # ----------------------------------------------------------
+                    # ADD TIME
+                    self.add_time(session, auftrag, year, month, day)
 
                     # parsed = json.loads(res.text)
                     # logging.log(
@@ -257,29 +257,52 @@ class ApiLandwehrService:
     # --------------------------------------------------------------------------
 
     def add_time(self, session: Session, auftrag: str, year: int, month: int, day: int) -> Response:
+        logging.log(logging.INFO, 'try to add new current times...')
 
-        time_to_set: date = date(year, month, day)
+        time_to_set: datetime = datetime(year=year, month=month, day=day)
         time_to_set_str: str = time_to_set.strftime(self.format_date_day_key)
 
         if self.always_worked is not None and self.always_worked.get(time_to_set_str, None) is None:
+            work_time_from_h: int = 8
+            work_time_from_m: int = 0
+            work_time_from: datetime = datetime(year=1970, month=2, day=1, hour=work_time_from_h, minute=work_time_from_m)
+            work_time_to_h: int = 17
+            work_time_to_m: int = 0
+            work_time_to: datetime = datetime(year=1970, month=2, day=1, hour=work_time_to_h, minute=work_time_to_m)
+
+            break_time_from_h: int = 12
+            break_time_from_m: int = 0
+            break_time_from: datetime = datetime(year=1970, month=2, day=1, hour=break_time_from_h, minute=break_time_from_m)
+            break_time_to_h: int = 13
+            break_time_to_m: int = 0
+            break_time_to: datetime = datetime(year=1970, month=2, day=1, hour=break_time_to_h, minute=break_time_to_m)
+
+            work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (break_time_to_h-break_time_from_h)
+            work_time_days_worked: float = work_time_hours_worked / 8
 
             PRADO_CALLBACK_PARAMETER = {
                 time_to_set_str: [
                     {
                         "arbeit": {
                             "von": {
-                                "date": "1970-02-01T07:00:00.000Z",
-                                "datum": "08:00:00"
+                                "date": f"1970-02-01T{(work_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                "datum": work_time_from.strftime(self.format_date_time)
                             },
                             "bis": {
-                                "date": "1970-02-01T16:00:00.000Z",
-                                "datum": "17:00:00"
+                                "date": f"1970-02-01T{(work_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                "datum": work_time_to.strftime(self.format_date_time)
                             }
                         },
                         "pause": [
                             {
-                                "von": {"date": "1970-02-01T11:00:00.000Z", "datum": "12:00:00"},
-                                "bis": {"date": "1970-02-01T12:00:00.000Z", "datum": "13:00:00"}
+                                "von": {
+                                    "date": f"1970-02-01T{(break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                    "datum": break_time_from.strftime(self.format_date_time)
+                                },
+                                "bis": {
+                                    "date": f"1970-02-01T{(break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                    "datum": break_time_to.strftime(self.format_date_time)
+                                }
                             }
                         ],
                         "art": "1",
@@ -287,22 +310,21 @@ class ApiLandwehrService:
                         "status": "0",
                         "schicht": None,
                         "leistung": None,
-                        "stunden": 8,
-                        "tage": "1",
+                        "stunden": work_time_hours_worked,
+                        "tage": str(work_time_days_worked),
                         "auftrag": auftrag,
                         "projekt": None,
                         "bemerkung": None
                     }
                 ]
             }
-            logging.log(
-                verboselogs.SPAM,
-                json.dumps(PRADO_CALLBACK_PARAMETER, indent=4, sort_keys=False),
-            )
+            # logging.log(
+            #     logging.DEBUG,
+            #     json.dumps(PRADO_CALLBACK_PARAMETER, indent=4, sort_keys=False),
+            # )
 
             params = (
                 ('page', 'Personal.Monatserfassung'),
-                ('SSID', self.SSID),
             )
 
             headers = {
@@ -318,7 +340,11 @@ class ApiLandwehrService:
                 'Sec-Fetch-Dest': 'empty',
                 'Sec-Fetch-Mode': 'cors',
                 'Sec-Fetch-Site': 'same-origin',
-                'Referer': f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Personal.Monatserfassung&SSID={self.SSID}',
+                'Referer': f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Personal.Monatserfassung',
+            }
+
+            cookies = {
+                'SSID': 'SSID',
             }
 
             data = {
@@ -332,13 +358,20 @@ class ApiLandwehrService:
                 'PRADO_CALLBACK_TARGET': 'ctl0$PortalLayoutContent$Main$SendData'
             }
             logging.log(
-                verboselogs.SPAM,
+                logging.DEBUG,
                 json.dumps(data, indent=4, sort_keys=False),
             )
 
-            # return session.post(
-            #     f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers_time, params=params_time, data=data_time,
-            # )
+            res = session.post(
+                f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers, params=params, cookies=cookies, data=data
+            )
+            self.get_prado_pagestate(res.text)
+
+            print(res.text)
+
+            return res
+        else:
+            logging.log(logging.INFO, '... your defined time-range is always included (or anything else happen)')
 
     # --------------------------------------------------------------------------
     #
