@@ -226,22 +226,24 @@ class ApiClockifyService:
                                         value.duration.get("h", 0) +
                                         (value.duration.get("m", 0) / 60)
                                     )
-                                    new_hour, new_minutes = self.convert_time_split(
-                                        opened_rest_time * 60 * 60
-                                    )
-                                    current_timeDuration = {
-                                        'h': new_hour, 'm': new_minutes
-                                    }
-                                    self.gen_issue(
-                                        results,
-                                        current_id=f'{settings.WORK_TIME_DEFAULT_ISSUE}_{value.date}_{value.project}_{value.task}',
-                                        current_project=value.project,
-                                        current_task=value.task,
-                                        current_day=value.date,
-                                        current_timeDuration=current_timeDuration,
-                                        current_issue=settings.WORK_TIME_DEFAULT_ISSUE,
-                                        current_description=settings.WORK_TIME_DEFAULT_COMMENT,
-                                    )
+                                    # only if there is missing time, else no buffer issue is needed
+                                    if opened_rest_time > 0:
+                                        new_hour, new_minutes = self.convert_time_split(
+                                            opened_rest_time * 60 * 60
+                                        )
+                                        current_timeDuration = {
+                                            'h': new_hour, 'm': new_minutes
+                                        }
+                                        self.gen_issue(
+                                            results,
+                                            current_id=f'{settings.WORK_TIME_DEFAULT_ISSUE}_{value.date}_{value.project}_{value.task}',
+                                            current_project=value.project,
+                                            current_task=value.task,
+                                            current_day=value.date,
+                                            current_timeDuration=current_timeDuration,
+                                            current_issue=settings.WORK_TIME_DEFAULT_ISSUE,
+                                            current_description=settings.WORK_TIME_DEFAULT_COMMENT,
+                                        )
                         # ------------------------------------------------------
                         # write result to file, to be used later for other api's
                         # example to import it
