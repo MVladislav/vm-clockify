@@ -44,8 +44,6 @@ def cli(ctx: Context, key: str, endpoint: str):
         sys.exit(2)
 
 
-
-
 # ------------------------------------------------------------------------------
 #
 #
@@ -67,8 +65,6 @@ def user(ctx: Context):
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)
         sys.exit(2)
-
-
 
 
 # ------------------------------------------------------------------------------
@@ -116,6 +112,20 @@ def user(ctx: Context):
     help='specific day to collect (YYYY-MM-DD) [None]',
     default=None,
 )
+@click.option(
+    '-ps',
+    '--project-search',
+    type=str,
+    help='specific project name to filter for [None]',
+    default=None,
+)
+@click.option(
+    '-ts',
+    '--task-search',
+    type=str,
+    help='specific task name to filter for [None]',
+    default=None,
+)
 @pass_context
 def times(
     ctx: Context,
@@ -124,6 +134,8 @@ def times(
     days_to_subtract: int,
     page_size: int,
     specific_day: str,
+    project_search: str,
+    task_search: str
 ):
     '''
         This api will print you worktime
@@ -139,6 +151,8 @@ def times(
             days_to_subtract=days_to_subtract,
             page_size=page_size,
             specific_day=specific_day,
+            project_name=project_search,
+            task_name=task_search,
         )
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f'process interupted! ({k})')
