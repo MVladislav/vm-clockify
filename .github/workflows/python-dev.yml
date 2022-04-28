@@ -21,7 +21,7 @@ env:
   GIT_BRANCH_NAME: "${{ github.ref }}" # ${GIT_BRANCH_NAME##*/}
   GIT_REPOSITORY_NAME: "${{ github.event.repository.name }}"
 
-  PROJECT_NAME: vm_clockify
+  PROJECT_NAME: vm-clockify
   VERSION: "0.0.2"
   ENV_MODE: "${{ contains(github.ref, 'main') && 'PROD' || 'KONS' }}"
   LOGGING_LEVEL: "${{ contains(github.ref, 'main') && 'INFO' || 'DEBUG' }}"

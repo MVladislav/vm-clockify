@@ -1,14 +1,14 @@
 [project]
-name = "vm_clockify"
+name = "vm-clockify"
 version = "0.0.2"
-description = "vm_clockify"
+description = "vm-clockify"
 authors = ["MVladislav <info@mvladislav.online>"]
 license = "GNU AGPLv3"
 readme = "README.md"
 python = "^36"
 homepage = "https://github.com/MVladislav"
-repository = "https://github.com/MVladislav/vm_clockify"
-documentation = "https://github.com/MVladislav/vm_clockify"
+repository = "https://github.com/MVladislav/vm-clockify"
+documentation = "https://github.com/MVladislav/vm-clockify"
 
 keywords = ["python3", "pip3", "pyproject.toml"]
 
