@@ -81,16 +81,16 @@ jobs:
 
       - name: analyzing the code with pylint
         run: |
-          python3 -m pylint --rcfile=setup.cfg `find app -regextype egrep -regex '(.*.py)$'` |
+          python3 -m pylint --rcfile=setup.cfg `find vm_clockify -regextype egrep -regex '(.*.py)$'` |
           tee pylint.log
 
       - name: lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          flake8 app --count --select=E9,F63,F7,F82 --show-source --statistics |
+          flake8 vm_clockify --count --select=E9,F63,F7,F82 --show-source --statistics |
           tee flake8_1.log
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 app --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics |
+          flake8 vm_clockify --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics |
           tee flake8_2.log
 
       - name: test with pytest
@@ -179,7 +179,7 @@ jobs:
       # - name: adding known hosts
       #   run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       # - name: deploy with rsync
-      #   run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/app/dist/
+      #   run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/vm_clockify/dist/
 
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

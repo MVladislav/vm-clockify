@@ -11,8 +11,8 @@ import maxminddb
 import requests
 from stringcolor import bold
 
-from app.utils.config import settings
-from app.utils.utilsFolderHelper import create_service_folder
+from vm_clockify.utils.config import settings
+from vm_clockify.utils.utilsFolderHelper import create_service_folder
 
 
 # ------------------------------------------------------------------------------

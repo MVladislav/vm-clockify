@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     GEO_LICENSE_KEY: Union[str, None] = config("GEO_LICENSE_KEY", default=None)
     # docs: https://dev.maxmind.com/geoip/geoip2/geolite2/
     GEO_LITE_TAR_FILE_URL = (
-        f"https://download.maxmind.com/app/geoip_download"
+        f"https://download.maxmind.com/vm_clockify/geoip_download"
         f"?edition_id=GeoLite2-City"
         f"&license_key={GEO_LICENSE_KEY}"
         f"&suffix=tar.gz"

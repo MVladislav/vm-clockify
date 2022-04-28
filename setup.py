@@ -43,7 +43,7 @@ def main():
         install_requires=read_requirements(),
         entry_points=f'''
             [console_scripts]
-            {PROJECT_NAME_SLUG}=app.main:cli
+            {PROJECT_NAME_SLUG}=vm_clockify.main:cli
         ''',
     )
 

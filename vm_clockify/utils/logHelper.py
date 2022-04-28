@@ -5,7 +5,7 @@ from typing import Union
 import coloredlogs
 import verboselogs
 
-from app.utils.config import settings
+from vm_clockify.utils.config import settings
 
 
 class LoggingMsgType(Enum):

@@ -10,9 +10,9 @@ from typing import IO, Any, List, Tuple, Union
 import verboselogs
 from progress.spinner import PixelSpinner
 
-from app.utils.config import settings
-from app.utils.defaultLogBanner import log_runBanner
-from app.utils.utilsHelper import is_tool, prompt_sudo
+from vm_clockify.utils.config import settings
+from vm_clockify.utils.defaultLogBanner import log_runBanner
+from vm_clockify.utils.utilsHelper import is_tool, prompt_sudo
 
 
 # ------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from app.utils.utilsHelper import is_tool, prompt_sudo
 # command exec - helper
 #
 # ------------------------------------------------------------------------------
-def run_command_endless(command_list= []) -> None:
+def run_command_endless(command_list=[]) -> None:
     sub_p: Union[Popen[bytes], None] = None
     is_running = True
     try:

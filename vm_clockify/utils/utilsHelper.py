@@ -64,8 +64,6 @@ def slugify(value: Union[str, None], allow_unicode: bool = False) -> Union[str, 
     return re.sub(r"[-\s]+", "-", value).strip("-_")
 
 
-
-
 # ------------------------------------------------------------------------------
 #
 #
@@ -107,8 +105,6 @@ def is_tool(name: str) -> bool:
     return which(name) is not None
 
 
-
-
 # ------------------------------------------------------------------------------
 #
 #
@@ -119,7 +115,7 @@ def geo() -> Union[str, None]:
     This is a geo test example
     """
     try:
-        from app.utils.locater import Locator
+        from vm_clockify.utils.locater import Locator
         return Locator().check_database()
 
     except Exception as e:
@@ -163,8 +159,6 @@ def url_checker(url) -> bool:
     except Exception as e:
         logging.log(logging.DEBUG, f"{url}: fails with [{type(e)}] '{e}'")
     return False
-
-
 
 
 # ------------------------------------------------------------------------------

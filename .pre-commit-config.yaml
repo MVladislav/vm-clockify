@@ -26,7 +26,7 @@ repos:
     rev: v2.6.0
     hooks:
       - id: reorder-python-imports
-        args: [--application-directories=.:app, --py36-plus]
+        args: [--application-directories=.:vm_clockify, --py36-plus]
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.29.0
@@ -38,5 +38,5 @@ repos:
     rev: v0.910
     hooks:
       - id: mypy
-        files: ^app/
+        files: ^vm_clockify/
         args: []

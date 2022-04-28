@@ -5,8 +5,8 @@
 !.github/**
 !.vscode/
 !.vscode/**
-!app/
-!app/**
+!vm_clockify/
+!vm_clockify/**
 !scripts/
 !scripts/**
 !tests/

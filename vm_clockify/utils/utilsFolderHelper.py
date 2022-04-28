@@ -4,8 +4,8 @@ import sys
 from pathlib import Path
 from typing import Union
 
-from app.utils.config import settings
-from app.utils.utilsHelper import slugify
+from vm_clockify.utils.config import settings
+from vm_clockify.utils.utilsHelper import slugify
 
 
 # --------------------------------------------------------------------------

@@ -76,8 +76,8 @@ $pre-commit install
 ### manual test run
 
 ```sh
-$mypy app
-$flake8 app
+$mypy vm_clockify
+$flake8 vm_clockify
 $pytest --cov=tests
 $tox
 ```
