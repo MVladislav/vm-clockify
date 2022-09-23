@@ -5,12 +5,13 @@
 !.github/**
 !.vscode/
 !.vscode/**
-!app/
-!app/**
+!vm_clockify/
+!vm_clockify/**
 !scripts/
 !scripts/**
 !tests/
 !tests/**
+!tests-start.sh
 
 !.dockerignore
 !.env_project

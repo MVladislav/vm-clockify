@@ -1,15 +1,53 @@
+[project]
+name = "vm-clockify"
+version = "0.0.2"
+description = "vm-clockify"
+authors = ["MVladislav <info@mvladislav.online>"]
+license = "GNU AGPLv3"
+readme = "README.md"
+python = "^36"
+homepage = "https://github.com/MVladislav"
+repository = "https://github.com/MVladislav/vm-clockify"
+documentation = "https://github.com/MVladislav/vm-clockify"
+
+keywords = ["python3", "pip3", "pyproject.toml"]
+
+classifiers = ["Topic :: Software Development"]
+
+# ----------------------------------------------------
+# Requirements
+#[dependencies]
+#Click = "^7.0"
+
+[dev-dependencies]
+black = { version = "^18.3-alpha.0", python = "^3.6" }
+autoflake = { version = "^1.3.1", python = "^3.6" }
+flake8 = { version = "^3.9.2", python = "^3.6" }
+tox = { version = "^3.24.3", python = "^3.6" }
+pytest = { version = "^6.2.5", python = "^3.6" }
+pytest-cov = { version = "^2.12.1", python = "^3.6" }
+mypy = { version = "^0.910", python = "^3.6" }
+pylint = { version = "^2.11.1", python = "^3.6" }
+isort = { version = "^4.3.21", python = "^3.6" }
+sqlalchemy-stubs = { version = "^0.3", python = "^3.6" }
+
+#[scripts]
+#poetry = "infer_pyproject.cli:main"
+
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
+requires = ["setuptools >= 42.0", "setuptools_scm >= 2.0.0, <3", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# ----------------------------------------------------
+# tools
+
 [tool.pytest.ini_options]
-addopts = "--cov=slapping"
-testpaths = [
-    "tests",
-]
+minversion = 6.0
+addopts = "-ra -q --cov=slapping"
+testpaths = ["tests"]
 
 [tool.mypy]
-mypy_path = "app"
+mypy_path = "vm_clockify"
 check_untyped_defs = true
 disallow_any_generics = true
 ignore_missing_imports = true
@@ -21,3 +59,37 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 no_implicit_reexport = true
+
+[tool.flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = ".git,__pycache__,__init__.py,.mypy_cache,.pytest_cache,build,dist,docs/conf.py,organice/migrations,*.egg-info"
+
+[tool.black]
+line-length = 123
+target_version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+line_length = 123

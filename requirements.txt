@@ -1,5 +1,6 @@
 starlette
 click
+pydantic
 coloredlogs
 verboselogs
 string-color
