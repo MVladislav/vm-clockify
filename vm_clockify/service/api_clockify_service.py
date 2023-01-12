@@ -4,6 +4,7 @@ import pickle
 import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, Iterable, List, Match, Optional, Tuple, Union
+from urllib.parse import parse_qs
 
 import requests
 import verboselogs
@@ -163,9 +164,7 @@ class ApiClockifyService:
                                     ).get(
                                         'name', None
                                     ) if work.get('project') is not None else None
-                                    # [
-                                    #     'name'
-                                    # ]
+
                                     current_description: str = str(
                                         work.get('description')
                                     )
@@ -189,24 +188,11 @@ class ApiClockifyService:
                                         current_day: str = current_timeStart.strftime(
                                             format_date_day
                                         )
-                                        # SETUP:: parse issue number from task or project
-                                        # need to be format: 'example name [issue-id]'
-                                        # or                 'example name [issue-...]'
-                                        current_issue: Union[
-                                            str, Match[Any], None
-                                        ] = re.match(
-                                            regex_issue, current_task
-                                        ) if current_task else re.match(
-                                            regex_issue, current_project
-                                        )
-                                        if isinstance(current_issue, Match):
-                                            current_issue = current_issue.group(1)
-                                        if current_issue is None:
-                                            logging.log(
-                                                logging.WARNING,
-                                                f'issue "{current_description}" has not id in task or project',
-                                            )
-                                        if isinstance(current_issue, str):
+                                        # get needed info like id from issue
+                                        current_issue, current_issue_type = self.parse_issue_extra_info(
+                                            current_task, current_project, current_description)
+
+                                        if current_issue is not None:
                                             # ----------------------------------------------
                                             # S1:: for a complet time overview for a day
                                             # SETUP:: id to store collections combined unique
@@ -229,6 +215,7 @@ class ApiClockifyService:
                                                 current_day=current_day,
                                                 current_timeDuration=current_timeDuration,
                                                 current_issue=current_issue,
+                                                current_issue_type=current_issue_type,
                                                 current_description=current_description,
                                             )
                                         # ----------------------------------------------
@@ -259,10 +246,6 @@ class ApiClockifyService:
                                         current_timeDuration = {
                                             'h': new_hour, 'm': new_minutes
                                         }
-
-                                        print({
-
-                                        })
 
                                         self.gen_issue(
                                             results,
@@ -322,6 +305,9 @@ class ApiClockifyService:
                                     logging.log(verboselogs.NOTICE, 'ISSUE:')
                                     for issue in value.issue:
                                         logging.log(logging.INFO, f'  [*] {issue}')
+                                if value.issue_type:
+                                    logging.log(verboselogs.NOTICE, 'I-TYPE:')
+                                    logging.log(logging.INFO, f'  [*] {value.issue_type}')
                                 if value.duration:
                                     logging.log(verboselogs.NOTICE, 'DURATION:')
                                     logging.log(
@@ -357,22 +343,30 @@ class ApiClockifyService:
         current_day: str,
         current_timeDuration: Dict[str, int],
         current_issue: Union[str, None] = None,
+        current_issue_type: Union[str, None] = None,
         current_description: Union[str, List[Any], None] = None,
     ):
         # START:: insert or update time per day
+        # get the issue by ID or create new one into result list
         results[current_id] = results.get(current_id, IssueTime())
+
+        # set project and task infos
         results[current_id].project = current_project
         results[current_id].task = current_task
         results[current_id].date = current_day
-        duration: Dict[str, int]
+        results[current_id].issue_type = current_issue_type
+
         if current_timeDuration is not None:
-            duration = results[current_id].duration
+            # calc and set the work-time
+            duration: Dict[str, int] = results[current_id].duration
             duration['h'] = duration.get('h', 0) + current_timeDuration.get('h', 0)
             duration['m'] = duration.get('m', 0) + current_timeDuration.get('m', 0)
             if duration['m'] >= 60:
                 new_hour, new_minutes = self.convert_time_split(duration['m'] * 60)
                 duration['h'] = duration.get('h', 0) + new_hour
                 duration['m'] = new_minutes
+
+            # add the youtrack issue number
             if isinstance(current_issue, str) and current_issue not in results[
                 current_id
             ].issue:
@@ -382,6 +376,8 @@ class ApiClockifyService:
                         logging.WARNING,
                         f'issue "{current_description}" has multiple ids, check this',
                     )
+
+            # add description text for issue
             if isinstance(current_description, str):
                 results[current_id].description.append(current_description)
             elif isinstance(current_description, list):
@@ -394,3 +390,42 @@ class ApiClockifyService:
         minutes = seconds // 60.0
         seconds %= 60.0
         return (int(hour), int(minutes))
+
+    def parse_issue_extra_info(self, current_task: str, current_project: str, current_description: str):
+        regex_issue = r'.*?\[(.*?)\].*?'
+
+        # SETUP:: parse issue number from task or project
+        # need to be format: 'example name [i=issue-id]'
+        # or                 'example name [i=issue-...]'
+        current_issue: Union[
+            str, Match[Any], None
+        ] = re.match(
+            regex_issue, current_task
+        ) if current_task else re.match(
+            regex_issue, current_project
+        )
+        if isinstance(current_issue, Match):
+            current_issue = current_issue.group(1)
+        if current_issue is None:
+            logging.log(
+                logging.WARNING,
+                f'issue "{current_description}" has not id in task or project',
+            )
+
+        if isinstance(current_issue, str):
+            parsed_result: Dict[Any, Any] = parse_qs(current_issue)
+
+            # get issue ID
+            parsed_result_id = parsed_result.get("i")
+            if parsed_result_id:
+                parsed_result_id = parsed_result_id[0]
+
+            # get issue TYPE
+            parsed_result_type = parsed_result.get("t")
+            if parsed_result_type:
+                parsed_result_type = parsed_result_type[0]
+
+            logging.log(logging.DEBUG, f"{parsed_result_id}, {parsed_result_type}")
+            return parsed_result_id, parsed_result_type
+
+        return None, None
