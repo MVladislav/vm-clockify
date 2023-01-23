@@ -408,7 +408,7 @@ class ApiClockifyService:
         return (int(hour), int(minutes))
 
     def parse_issue_extra_info(self, current_task: str, current_project: str, current_description: str):
-        regex_issue = r'.*?\[(.*?)\].*?'
+        regex_issue = r'(?:(?:.*?)\[(.*?)\](?:.*?))+$'
 
         # SETUP:: parse issue number from task or project
         # need to be format: 'example name [i=issue-id]'
