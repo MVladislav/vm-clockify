@@ -2,13 +2,12 @@
 name = "vm-clockify"
 version = "0.0.2"
 description = "vm-clockify"
-authors = ["MVladislav <info@mvladislav.online>"]
-license = "GNU AGPLv3"
+authors = [
+  {name = "MVladislav"},
+  {email = "info@mvladislav.online"}
+]
+license = {file = "LICENSE"}
 readme = "README.md"
-python = "^36"
-homepage = "https://github.com/MVladislav"
-repository = "https://github.com/MVladislav/vm-clockify"
-documentation = "https://github.com/MVladislav/vm-clockify"
 
 keywords = ["python3", "pip3", "pyproject.toml"]
 
@@ -63,7 +62,7 @@ no_implicit_reexport = true
 [tool.flake8]
 max-line-length = 127
 max-complexity = 10
-exclude = ".git,__pycache__,__init__.py,.mypy_cache,.pytest_cache,build,dist,docs/conf.py,organice/migrations,*.egg-info"
+exclude = "build,dist,docs/conf.py,organice/migrations,*.egg-info"
 
 [tool.black]
 line-length = 123

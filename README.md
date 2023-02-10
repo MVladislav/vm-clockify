@@ -11,6 +11,7 @@
 
 - [Python CLI Clockify API](#python-cli-clockify-api)
   - [information](#information)
+    - [example usage](#example-usage)
     - [clockify task-name and project-name usage](#clockify-task-name-and-project-name-usage)
     - [config](#config)
   - [install](#install)
@@ -27,16 +28,45 @@ in a combined way by `[day, project, task]`
 
 ## information
 
-### clockify task-name and project-name usage
+### example usage
 
-this script will parse the **task**-name and **project**-name usage and search for brackets like `[(.*?)]`
-where you can write **issue-id** in it, for example:
+get 2-days of work from clockify with start day `2023-02-07`
 
-```txt
-some description task [ISSUE-666]
+- `-d 1` => will return 2 days, the requested day + the day before
+- `-p 1000` => allow to include 1000 entries from clockify over 2 days
+- `-sp '2023-02-07'` => the start day to collect work from
+
+```sh
+$vm-clockify clockify times -d 1 -p 1000 -sp '2023-02-07'
 ```
 
-This **issue-id** can than be used to import the time into services like youtrack
+upload the gathered work from command above into youtrack
+
+```sh
+$vm-clockify youtrack upload
+```
+
+### clockify task-name and project-name usage
+
+this script will parse the **task**-name and **project**-name usage and search for brackets like `<DESCRIPTION> [<URL-PARAM-SYNTAX>]`
+where you can write **issue-id** in it, for example:
+
+> only the last bracket in a description will be checked
+
+- `i` => issue-id
+- `t` => issue-type-name
+
+```txt
+some description task [i=ISSUE-666]
+```
+
+or
+
+```txt
+some description task [i=ISSUE-666&t=Training]
+```
+
+This **issue-id** can than be used to import the time into services like youtrack, and **issue-type-name** to mark the issue in youtrack with an type.
 
 ### config
 

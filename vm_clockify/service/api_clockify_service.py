@@ -3,7 +3,7 @@ import logging
 import pickle
 import re
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, List, Match, Tuple, Union
+from typing import Any, Dict, Iterable, List, Match, Optional, Tuple, Union
 from urllib.parse import parse_qs
 
 import requests
@@ -21,13 +21,13 @@ from ..utils.utilsFolderHelper import create_service_folder
 class IssueTime:
 
     def __init__(self) -> None:
-        self.project: Union[str, None] = None
-        self.task: Union[str, None] = None
-        self.date: Union[str, None] = None
+        self.project: Optional[str] = None
+        self.task: Optional[str] = None
+        self.date: Optional[str] = None
         self.duration: Dict[str, int] = {}
         self.issue: List[str] = []
         self.description: List[str] = []
-        self.issue_type: Union[str, None] = None
+        self.issue_type: Optional[str] = None
 
 
 class ApiClockifyService:
@@ -74,10 +74,11 @@ class ApiClockifyService:
         userId: str,
         days_to_subtract: int = 0,
         page_size: int = 50,
-        specific_day: Union[str, None] = None,
-        project_name: Union[str, None] = None,
-        task_name: Union[str, None] = None,
-    ) -> Union[Dict[str, IssueTime], None]:
+        specific_day: Optional[str] = None,
+        project_name: Optional[str] = None,
+        task_name: Optional[str] = None,
+        combine: bool = False
+    ) -> Optional[Dict[str, IssueTime]]:
         try:
             prefix_sum = "-> sum:"
             prefix_duration = "PT"
@@ -86,9 +87,9 @@ class ApiClockifyService:
             format_date_day = "%Y-%m-%d"
             regex_issue = r".*?\[(.*?)\].*?"
             regex_duration = r"PT(?:([0-9]{1,2})H){0,1}(?:([0-9]{1,2})M){0,1}"
-            tmp_day: Union[datetime, None] = datetime.now()
-            start_day: Union[str, None] = None
-            end_day: Union[str, None] = tmp_day.strftime("%Y-%m-%dT23:59:59.000Z") if tmp_day else None
+            tmp_day: Optional[datetime] = datetime.now()
+            start_day: Optional[str] = None
+            end_day: Optional[str] = tmp_day.strftime("%Y-%m-%dT23:59:59.000Z") if tmp_day else None
             if specific_day is not None:
                 tmp_day = datetime.strptime(specific_day, format_date_day)
                 end_day = tmp_day.strftime("%Y-%m-%dT23:59:59.000Z")
@@ -126,12 +127,12 @@ class ApiClockifyService:
                             for work in parsed:
                                 if isinstance(work, dict):
                                     # parse first all needed values from json
-                                    timeStart: Union[str, None] = work.get(
+                                    timeStart: Optional[str] = work.get(
                                         "timeInterval", {}
                                     ).get(
                                         "start", None
                                     ) if work.get("timeInterval") is not None else None
-                                    timeDuration: Union[str, None] = work.get(
+                                    timeDuration: Optional[str] = work.get(
                                         "timeInterval", {}
                                     ).get(
                                         "duration", None
@@ -154,12 +155,12 @@ class ApiClockifyService:
                                                     2
                                                 ) else 0,
                                             }
-                                    current_task: Union[str, None] = work.get(
+                                    current_task: Optional[str] = work.get(
                                         "task", {}
                                     ).get(
                                         "name", None
                                     ) if work.get("task") is not None else None
-                                    current_project: Union[str, None] = work.get(
+                                    current_project: Optional[str] = work.get(
                                         "project", {}
                                     ).get(
                                         "name", None
@@ -167,17 +168,17 @@ class ApiClockifyService:
 
                                     # add this or remove
                                     # to combine same issues or split them them
-                                    clockify_issue_id: Union[str, None] = work.get(
-                                        "id", ""
-                                    )
+                                    clockify_issue_id: Optional[str] = None
+                                    if not combine:
+                                        clockify_issue_id = work.get(
+                                            "id", ""
+                                        )
 
                                     current_description: str = str(
                                         work.get("description")
                                     )
                                     # try to parse the start date into datetime object
-                                    current_timeStart: Union[
-                                        datetime, None
-                                    ] = datetime.strptime(
+                                    current_timeStart: Optional[datetime] = datetime.strptime(
                                         timeStart, format_date_from
                                     ) if timeStart else None
 
@@ -358,8 +359,8 @@ class ApiClockifyService:
         current_task: str,
         current_day: str,
         current_timeDuration: Dict[str, int],
-        current_issue: Union[str, None] = None,
-        current_issue_type: Union[str, None] = None,
+        current_issue: Optional[str] = None,
+        current_issue_type: Optional[str] = None,
         current_description: Union[str, List[Any], None] = None,
     ):
         # START:: insert or update time per day

@@ -126,6 +126,12 @@ def user(ctx: Context):
     help='specific task name to filter for [None]',
     default=None,
 )
+@click.option(
+    '-c',
+    '--combine',
+    help='if similar tasks should be combined [false]',
+    is_flag=True,
+)
 @pass_context
 def times(
     ctx: Context,
@@ -135,10 +141,11 @@ def times(
     page_size: int,
     specific_day: str,
     project_search: str,
-    task_search: str
+    task_search: str,
+    combine: bool
 ):
     '''
-        This api will print you worktime
+        This api will print you work-time
         HINT: run first user-api to get workspace ID and user ID
     '''
     try:
@@ -153,6 +160,7 @@ def times(
             specific_day=specific_day,
             project_name=project_search,
             task_name=task_search,
+            combine=combine,
         )
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f'process interupted! ({k})')
