@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "wheel", "poetry-core>=1.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry]
+name = "vm-clockify"
+version = "0.0.2"
+description = "clockify pull to youtrack push terminal service"
+authors = ["MVladislav <info@mvladislav.online>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[build-system.scripts]
+vm-clockify = "vm_clockify.main:cli"

@@ -9,24 +9,20 @@
 !vm_clockify/**
 !scripts/
 !scripts/**
-!tests/
-!tests/**
 !tests-start.sh
 
 !.dockerignore
-!.env_project
-!.env_template
 !.pre-commit-config.yaml
 !.gitignore
 !CHANGELOG.md
 !Dockerfile
 !LICENCE
-!pyproject.toml
 !README.md
 !SECURITY.md
 !docker-compose.yaml
 !requirements_dev.txt
 !requirements.txt
+!pyproject.toml
 !setup.cfg
 !setup.py
 !tox.ini

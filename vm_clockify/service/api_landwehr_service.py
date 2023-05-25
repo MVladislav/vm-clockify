@@ -1,12 +1,10 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import bs4 as bs
-import requests
-from requests.models import Response
-from requests.sessions import Session
+import httpx
 
 from ..utils.config import settings
 
@@ -17,14 +15,13 @@ from ..utils.config import settings
 #
 # ------------------------------------------------------------------------------
 class ApiLandwehrService:
-
     # --------------------------------------------------------------------------
     #
     #
     #
     # --------------------------------------------------------------------------
     def __init__(self):
-        logging.log(logging.DEBUG, 'landwehr-api-service is initiated')
+        logging.log(logging.DEBUG, "landwehr-api-service is initiated")
 
     # --------------------------------------------------------------------------
     #
@@ -34,11 +31,11 @@ class ApiLandwehrService:
 
     PRADO_PAGESTATE: Union[str, None] = None
     SSID: Union[str, None] = None
-    format_date_day = '%Y-%m-%d'
-    format_date_day_key = '%d.%m.%Y'
-    format_date_time = '%H:%M:%S'
+    format_date_day = "%Y-%m-%d"
+    format_date_day_key = "%d.%m.%Y"
+    format_date_time = "%H:%M:%S"
 
-    always_worked: Dict[str, any] = None
+    always_worked: Optional[Dict[str, Any]] = None
 
     # --------------------------------------------------------------------------
     #
@@ -48,14 +45,18 @@ class ApiLandwehrService:
 
     def upload(self, year: int, month: int, day: int, auftrag: str):
         try:
-            with requests.Session() as session:
+            with httpx.Client() as session:
                 # ------------------------------------------------------------------
                 # LOGIN
-                res: Response = self.login(session)
+                res: httpx.Response = self.login(session)
 
                 # ------------------------------------------------------------------
                 # LOGIN CHECK
-                if (res.status_code == 200 or res.status_code == 302) and self.PRADO_PAGESTATE is not None and self.SSID is not None:
+                if (
+                    (res.status_code == 200 or res.status_code == 302)
+                    and self.PRADO_PAGESTATE is not None
+                    and self.SSID is not None
+                ):
                     pass
                     # ----------------------------------------------------------
                     # GET TIME
@@ -84,34 +85,38 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def login(self, session: Session) -> Response:
-        logging.log(logging.INFO, 'try to login...')
+    def login(self, session: httpx.Client) -> httpx.Response:
+        logging.log(logging.INFO, "try to login...")
 
         # ----------------------------------------------------------------------
         # first make a get, to collect some "hidden fields"
 
         params = (
-            ('page', 'Login'),
-            ('login', 'Personal'),
-            ('mandnr', settings.LANDWEHR_MAND_NR),
-            ('theme', settings.LANDWEHR_COMPANY),
+            ("page", "Login"),
+            ("login", "Personal"),
+            ("mandnr", settings.LANDWEHR_MAND_NR),
+            ("theme", settings.LANDWEHR_COMPANY),
         )
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,de-DE;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
+            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,de-DE;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
         }
-        response = requests.get(f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers, params=params)
-        self.SSID = response.cookies['SSID']
+        response = httpx.get(
+            f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}",
+            headers=headers,
+            params=params,
+        )
+        self.SSID = response.cookies["SSID"]
         logging.log(logging.DEBUG, self.SSID)
 
         self.get_prado_pagestate(response.text)
@@ -120,45 +125,50 @@ class ApiLandwehrService:
         # second try to login and save login "hidden fields"
 
         params = (
-            ('page', 'Login'),
-            ('login', 'Personal'),
-            ('mandnr', settings.LANDWEHR_MAND_NR),
-            ('theme', settings.LANDWEHR_COMPANY),
+            ("page", "Login"),
+            ("login", "Personal"),
+            ("mandnr", settings.LANDWEHR_MAND_NR),
+            ("theme", settings.LANDWEHR_COMPANY),
         )
         headers = {
-            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,de-DE;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': settings.LANDWEHR_API_URL,
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'same-origin',
-            'Referer': f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}',
-            'Sec-Fetch-User': '?1',
+            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,de-DE;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Origin": settings.LANDWEHR_API_URL,
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Referer": f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}",
+            "Sec-Fetch-User": "?1",
         }
 
         cookies = {
-            'SSID': self.SSID,
+            "SSID": self.SSID,
         }
 
         data = {
-            'PRADO_PAGESTATE': self.PRADO_PAGESTATE,
-            'ctl0$PortalLayoutContent$Main$MandantSelect': settings.LANDWEHR_MAND_NR,
-            'ctl0$PortalLayoutContent$Main$loginname': settings.LANDWEHR_USERNAME,
-            'ctl0$PortalLayoutContent$Main$password': settings.LANDWEHR_PASSWORD,
-            'ctl0$PortalLayoutContent$Main$LoginButton': '',
-            'PRADO_POSTBACK_TARGET': 'ctl0$PortalLayoutContent$Main$LoginButton'
+            "PRADO_PAGESTATE": self.PRADO_PAGESTATE,
+            "ctl0$PortalLayoutContent$Main$MandantSelect": settings.LANDWEHR_MAND_NR,
+            "ctl0$PortalLayoutContent$Main$loginname": settings.LANDWEHR_USERNAME,
+            "ctl0$PortalLayoutContent$Main$password": settings.LANDWEHR_PASSWORD,
+            "ctl0$PortalLayoutContent$Main$LoginButton": "",
+            "PRADO_POSTBACK_TARGET": "ctl0$PortalLayoutContent$Main$LoginButton",
         }
 
         res = session.post(
-            f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers, params=params, cookies=cookies, data=data, allow_redirects=False
+            f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}",
+            headers=headers,
+            params=params,
+            cookies=cookies,
+            data=data,
+            follow_redirects=False,
         )
-        self.SSID = session.cookies['SSID']
+        self.SSID = session.cookies["SSID"]
         logging.log(logging.DEBUG, res.cookies)
         logging.log(logging.DEBUG, session.cookies)
         logging.log(logging.DEBUG, self.SSID)
@@ -171,79 +181,88 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def get_time(self, session: Session, year: int, month: int) -> Response:
-        logging.log(logging.INFO, 'try to get current times...')
+    def get_time(
+        self, session: httpx.Client, year: int, month: int
+    ) -> Optional[httpx.Response]:
+        logging.log(logging.INFO, "try to get current times...")
 
         # ----------------------------------------------------------------------
         # first try ...
 
-        params = (
-            ('page', 'Personal.Monatserfassung'),
-        )
+        params = (("page", "Personal.Monatserfassung"),)
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,de-DE;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Fetch-User': '?1',
-            'Referer': f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}',
+            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,de-DE;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Referer": f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}",
         }
 
+        if not self.SSID:
+            logging.log(logging.ERROR, "failed because SSID is not set")
+            return None
+
         cookies = {
-            'SSID': self.SSID,
+            "SSID": self.SSID,
         }
 
         res = session.get(
-            f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers, params=params, cookies=cookies,
+            f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}",
+            headers=headers,
+            params=params,
+            cookies=cookies,
         )
         self.get_prado_pagestate(res.text)
 
         # ----------------------------------------------------------------------
         # second try ...
 
-        params = (
-            ('page', 'Personal.Monatserfassung'),
-        )
+        params = (("page", "Personal.Monatserfassung"),)
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0',
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,de-DE;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Origin': settings.LANDWEHR_API_URL,
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'Referer': f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Personal.Monatserfassung',
+            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
+            "Accept": "*/*",
+            "Accept-Language": "en-US,de-DE;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest",
+            "Origin": settings.LANDWEHR_API_URL,
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "Referer": f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Personal.Monatserfassung",
         }
 
         cookies = {
-            'SSID': self.SSID,
+            "SSID": self.SSID,
         }
 
         data = {
-            'MAX_FILE_SIZE': '33554432',
-            'PRADO_PAGESTATE': self.PRADO_PAGESTATE,
-            'ctl0$PortalLayoutContent$Main$zeitraum': f'{year}|{month}',
-            'ctl0$PortalLayoutContent$Main$SignatureImage': '',
-            'ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde': '',
-            'ctl0$PortalLayoutContent$Main$TimesheetOverlay$PrintWechsel': '0',
-            'PRADO_CALLBACK_TARGET': 'ctl0$PortalLayoutContent$Main$StartButton'
+            "MAX_FILE_SIZE": "33554432",
+            "PRADO_PAGESTATE": self.PRADO_PAGESTATE,
+            "ctl0$PortalLayoutContent$Main$zeitraum": f"{year}|{month}",
+            "ctl0$PortalLayoutContent$Main$SignatureImage": "",
+            "ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde": "",
+            "ctl0$PortalLayoutContent$Main$TimesheetOverlay$PrintWechsel": "0",
+            "PRADO_CALLBACK_TARGET": "ctl0$PortalLayoutContent$Main$StartButton",
         }
 
         res = session.post(
-            f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers, params=params, cookies=cookies, data=data,
+            f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}",
+            headers=headers,
+            params=params,
+            cookies=cookies,
+            data=data,
         )
         self.get_prado_pagestate(res.text)
 
@@ -256,28 +275,51 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def add_time(self, session: Session, auftrag: str, year: int, month: int, day: int) -> Response:
-        logging.log(logging.INFO, 'try to add new current times...')
+    def add_time(
+        self, session: httpx.Client, auftrag: str, year: int, month: int, day: int
+    ) -> Optional[httpx.Response]:
+        logging.log(logging.INFO, "try to add new current times...")
 
         time_to_set: datetime = datetime(year=year, month=month, day=day)
         time_to_set_str: str = time_to_set.strftime(self.format_date_day_key)
 
-        if self.always_worked is not None and self.always_worked.get(time_to_set_str, None) is None:
+        if (
+            self.always_worked is not None
+            and self.always_worked.get(time_to_set_str, None) is None
+        ):
             work_time_from_h: int = 8
             work_time_from_m: int = 0
-            work_time_from: datetime = datetime(year=1970, month=2, day=1, hour=work_time_from_h, minute=work_time_from_m)
+            work_time_from: datetime = datetime(
+                year=1970,
+                month=2,
+                day=1,
+                hour=work_time_from_h,
+                minute=work_time_from_m,
+            )
             work_time_to_h: int = 17
             work_time_to_m: int = 0
-            work_time_to: datetime = datetime(year=1970, month=2, day=1, hour=work_time_to_h, minute=work_time_to_m)
+            work_time_to: datetime = datetime(
+                year=1970, month=2, day=1, hour=work_time_to_h, minute=work_time_to_m
+            )
 
             break_time_from_h: int = 12
             break_time_from_m: int = 0
-            break_time_from: datetime = datetime(year=1970, month=2, day=1, hour=break_time_from_h, minute=break_time_from_m)
+            break_time_from: datetime = datetime(
+                year=1970,
+                month=2,
+                day=1,
+                hour=break_time_from_h,
+                minute=break_time_from_m,
+            )
             break_time_to_h: int = 13
             break_time_to_m: int = 0
-            break_time_to: datetime = datetime(year=1970, month=2, day=1, hour=break_time_to_h, minute=break_time_to_m)
+            break_time_to: datetime = datetime(
+                year=1970, month=2, day=1, hour=break_time_to_h, minute=break_time_to_m
+            )
 
-            work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (break_time_to_h-break_time_from_h)
+            work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (
+                break_time_to_h - break_time_from_h
+            )
             work_time_days_worked: float = work_time_hours_worked / 8
 
             PRADO_CALLBACK_PARAMETER = {
@@ -286,23 +328,27 @@ class ApiLandwehrService:
                         "arbeit": {
                             "von": {
                                 "date": f"1970-02-01T{(work_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
-                                "datum": work_time_from.strftime(self.format_date_time)
+                                "datum": work_time_from.strftime(self.format_date_time),
                             },
                             "bis": {
                                 "date": f"1970-02-01T{(work_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
-                                "datum": work_time_to.strftime(self.format_date_time)
-                            }
+                                "datum": work_time_to.strftime(self.format_date_time),
+                            },
                         },
                         "pause": [
                             {
                                 "von": {
                                     "date": f"1970-02-01T{(break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
-                                    "datum": break_time_from.strftime(self.format_date_time)
+                                    "datum": break_time_from.strftime(
+                                        self.format_date_time
+                                    ),
                                 },
                                 "bis": {
                                     "date": f"1970-02-01T{(break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
-                                    "datum": break_time_to.strftime(self.format_date_time)
-                                }
+                                    "datum": break_time_to.strftime(
+                                        self.format_date_time
+                                    ),
+                                },
                             }
                         ],
                         "art": "1",
@@ -314,7 +360,7 @@ class ApiLandwehrService:
                         "tage": str(work_time_days_worked),
                         "auftrag": auftrag,
                         "projekt": None,
-                        "bemerkung": None
+                        "bemerkung": None,
                     }
                 ]
             }
@@ -323,39 +369,37 @@ class ApiLandwehrService:
             #     json.dumps(PRADO_CALLBACK_PARAMETER, indent=4, sort_keys=False),
             # )
 
-            params = (
-                ('page', 'Personal.Monatserfassung'),
-            )
+            params = (("page", "Personal.Monatserfassung"),)
 
             headers = {
-                'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0',
-                'Accept': '*/*',
-                'Accept-Language': 'en-US,de-DE;q=0.5',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Origin': settings.LANDWEHR_API_URL,
-                'DNT': '1',
-                'Connection': 'keep-alive',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-origin',
-                'Referer': f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Personal.Monatserfassung',
+                "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,de-DE;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-Requested-With": "XMLHttpRequest",
+                "Origin": settings.LANDWEHR_API_URL,
+                "DNT": "1",
+                "Connection": "keep-alive",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin",
+                "Referer": f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Personal.Monatserfassung",
             }
 
             cookies = {
-                'SSID': 'SSID',
+                "SSID": "SSID",
             }
 
             data = {
-                'MAX_FILE_SIZE': '33554432',
-                'PRADO_PAGESTATE': self.PRADO_PAGESTATE,
-                'ctl0$PortalLayoutContent$Main$zeitraum': f'{year}|{month}',
-                'ctl0$PortalLayoutContent$Main$SignatureImage': '',
-                'ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde': '',
-                'ctl0$PortalLayoutContent$Main$TimesheetOverlay$PrintWechsel': '0',
-                'PRADO_CALLBACK_PARAMETER': json.dumps(PRADO_CALLBACK_PARAMETER),
-                'PRADO_CALLBACK_TARGET': 'ctl0$PortalLayoutContent$Main$SendData'
+                "MAX_FILE_SIZE": "33554432",
+                "PRADO_PAGESTATE": self.PRADO_PAGESTATE,
+                "ctl0$PortalLayoutContent$Main$zeitraum": f"{year}|{month}",
+                "ctl0$PortalLayoutContent$Main$SignatureImage": "",
+                "ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde": "",
+                "ctl0$PortalLayoutContent$Main$TimesheetOverlay$PrintWechsel": "0",
+                "PRADO_CALLBACK_PARAMETER": json.dumps(PRADO_CALLBACK_PARAMETER),
+                "PRADO_CALLBACK_TARGET": "ctl0$PortalLayoutContent$Main$SendData",
             }
             logging.log(
                 logging.DEBUG,
@@ -363,7 +407,11 @@ class ApiLandwehrService:
             )
 
             res = session.post(
-                f'{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}', headers=headers, params=params, cookies=cookies, data=data
+                f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}",
+                headers=headers,
+                params=params,
+                cookies=cookies,
+                data=data,
             )
             self.get_prado_pagestate(res.text)
 
@@ -371,7 +419,11 @@ class ApiLandwehrService:
 
             return res
         else:
-            logging.log(logging.INFO, '... your defined time-range is always included (or anything else happen)')
+            logging.log(
+                logging.INFO,
+                "... your defined time-range is always included (or anything else happen)",
+            )
+        return None
 
     # --------------------------------------------------------------------------
     #
@@ -381,38 +433,49 @@ class ApiLandwehrService:
 
     def get_prado_pagestate(self, text: Union[str, None]):
         if text is not None:
-            soup = bs.BeautifulSoup(text, 'lxml')
-            prado_pagestate_id = soup.find('input', attrs={'id': 'PRADO_PAGESTATE'})
+            soup = bs.BeautifulSoup(text, "lxml")
+            prado_pagestate_id = soup.find("input", attrs={"id": "PRADO_PAGESTATE"})
             if prado_pagestate_id is not None:
-                self.PRADO_PAGESTATE = prado_pagestate_id.get('value')
-                logging.log(logging.DEBUG, f'PRADO_PAGESTATE:: {self.PRADO_PAGESTATE}')
+                self.PRADO_PAGESTATE = prado_pagestate_id.get("value")
+                logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.PRADO_PAGESTATE}")
 
     def html_table_to_json(self, text: Union[str, None]) -> None:
         if text is not None:
-            soup = bs.BeautifulSoup(text, 'lxml')
-            tbl = soup.find('table', attrs={'class', 'erfassung'})
+            soup = bs.BeautifulSoup(text, "lxml")
+            tbl = soup.find("table", attrs={"class", "erfassung"})
             if tbl is not None:
-                logging.log(logging.INFO, 'try parse table...')
+                logging.log(logging.INFO, "try parse table...")
 
                 table_data = {}
-                tbl_body = tbl.find('tbody')
+                tbl_body = tbl.find("tbody")
 
-                for tr in tbl_body.find_all('tr', recursive=False):
+                for tr in tbl_body.find_all("tr", recursive=False):
                     val = {}
-                    for i, td in enumerate(tr.find_all('td', recursive=False)):
-                        attrs: List[str] = td.get_attribute_list('class')
+                    for i, td in enumerate(tr.find_all("td", recursive=False)):
+                        attrs: List[str] = td.get_attribute_list("class")
                         if i == 0:
-                            val['tag'] = td.find('span').text
-                        elif 'datum' in attrs:
-                            val['date'] = td.text
-                        elif 'arbeit' in attrs:
-                            val['work_start'] = td.find('input', attrs={'class': 'von'}).get('value')
-                            val['work_end'] = td.find('input', attrs={'class': 'bis'}).get('value')
-                        elif 'pause' in attrs:
-                            val['pause_start'] = td.find('input', attrs={'class': 'von'}).get('value')
-                            val['pause_end'] = td.find('input', attrs={'class': 'bis'}).get('value')
-                    if val.get('date', None) is not None and val.get('work_start', None) is not None:
-                        table_data[val.get('date')] = val
+                            val["tag"] = td.find("span").text
+                        elif "datum" in attrs:
+                            val["date"] = td.text
+                        elif "arbeit" in attrs:
+                            val["work_start"] = td.find(
+                                "input", attrs={"class": "von"}
+                            ).get("value")
+                            val["work_end"] = td.find(
+                                "input", attrs={"class": "bis"}
+                            ).get("value")
+                        elif "pause" in attrs:
+                            val["pause_start"] = td.find(
+                                "input", attrs={"class": "von"}
+                            ).get("value")
+                            val["pause_end"] = td.find(
+                                "input", attrs={"class": "bis"}
+                            ).get("value")
+                    if (
+                        val.get("date", None) is not None
+                        and val.get("work_start", None) is not None
+                    ):
+                        table_data[val.get("date")] = val
 
                 self.always_worked = table_data
                 logging.log(logging.DEBUG, json.dumps(table_data, indent=4))

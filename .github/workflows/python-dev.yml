@@ -22,8 +22,7 @@ env:
   GIT_REPOSITORY_NAME: "${{ github.event.repository.name }}"
 
   PROJECT_NAME: vm-clockify
-  VERSION: "0.0.2"
-  ENV_MODE: "${{ contains(github.ref, 'main') && 'PROD' || 'KONS' }}"
+  VERSION: 0.0.2
   LOGGING_LEVEL: "${{ contains(github.ref, 'main') && 'INFO' || 'DEBUG' }}"
   LOGGING_VERBOSE: "${{ contains(github.ref, 'main') && 2 || 3 }}"
   VM_BASE_PATH: /tmp

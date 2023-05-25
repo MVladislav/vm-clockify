@@ -15,10 +15,6 @@
     - [clockify task-name and project-name usage](#clockify-task-name-and-project-name-usage)
     - [config](#config)
   - [install](#install)
-    - [DEBUG](#debug)
-  - [code quality and git](#code-quality-and-git)
-    - [pre-commit](#pre-commit)
-    - [manual test run](#manual-test-run)
 
 ---
 
@@ -70,44 +66,51 @@ This **issue-id** can than be used to import the time into services like youtrac
 
 ### config
 
-copy the `.env` file and add your values
+setup `.env` file with following possible params:
 
-```sh
-$cp .env_template .env
+```env
+# optional
+LOGGING_LEVEL=DEBUG
+LOGGING_VERBOSE=3
+
+# need to be correct set, to work with youtrack correct
+TIME_ZONE=Europe/Berlin
+
+# optional
+WORK_TIME_DEFAULT_ISSUE=<ADD_ISSUE_HERE>
+WORK_TIME_DEFAULT_COMMENT=<ADD_TEXT_HERE>
+
+# -> if get worktime from clockify is used
+# https://clockify.me/user/settings
+CLOCKIFY_API_KEY=<ADD_KEY_HERE>
+# get by use command 'api user'
+CLOCKIFY_API_WORKSPACE_ID=<ADD_ID_HERE>
+CLOCKIFY_API_USER_ID=<ADD_ID_HERE>
+
+# -> if upload to youtrack is used
+# https://www.jetbrains.com/help/youtrack/devportal/Manage-Permanent-Token.html#obtain-permanent-token
+YOUTRACK_API_KEY=<ADD_HERE>
+YOUTRACK_API_ENDPOINT=<ADD_HERE>
+
+# -> if upload to landwehr is used
+LANDWEHR_API_URL=<ADD_HERE>
+LANDWEHR_API_ENDPOINT=/index.php
+LANDWEHR_COMPANY=<ADD_HERE>
+LANDWEHR_MAND_NR=<ADD_HERE>
+LANDWEHR_USERNAME=<ADD_HERE>
+LANDWEHR_PASSWORD=<ADD_HERE>
 ```
 
 ## install
 
 ```sh
-$pip3 install .
+$python3 -m pip install .
 ```
 
-### DEBUG
+or
 
 ```sh
 $python3 -m venv ./venv
 $source venv/bin/activate
-$pip3 install -v --editable .
-```
-
----
-
-## code quality and git
-
-### pre-commit
-
-run:
-
-```sh
-$git config --local core.hooksPath .git/hooks
-$pre-commit install
-```
-
-### manual test run
-
-```sh
-$mypy vm_clockify
-$flake8 vm_clockify
-$pytest --cov=tests
-$tox
+$python3 -m pip install -v --editable .
 ```

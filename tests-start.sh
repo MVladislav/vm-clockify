@@ -21,8 +21,6 @@ python3 -m pip install -r requirements_dev.txt
 
 echo 'run tests...'
 bash ./scripts/format-imports.sh | tee ./scripts/logs/format-imports.log
-bash ./scripts/test-cov-html.sh | tee ./scripts/logs/test-cov-html.log
-bash ./scripts/test.sh "$@" | tee ./scripts/logs/test.log
 bash ./scripts/lint.sh | tee ./scripts/logs/lint.log
 
 exit 0

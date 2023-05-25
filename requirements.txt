@@ -1,13 +1,14 @@
 starlette
 click
-pydantic
 coloredlogs
 verboselogs
+pydantic
 string-color
-progress
-progressbar
 
-maxminddb
-requests
-types-requests
+httpx
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+
+pytz
+types-pytz
+
+bs4

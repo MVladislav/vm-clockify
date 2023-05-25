@@ -15,26 +15,26 @@ from ..utils.utilsHelper import Context, pass_context, uri_validator
 # ------------------------------------------------------------------------------
 @click.group()
 @click.option(
-    '-k',
-    '--key',
+    "-k",
+    "--key",
     type=str,
-    help=f'api key for clockify [{settings.CLOCKIFY_API_KEY}]',
+    help=f"api key for clockify [{settings.CLOCKIFY_API_KEY}]",
     default=settings.CLOCKIFY_API_KEY,
     required=True,
 )
 @click.option(
-    '-e',
-    '--endpoint',
+    "-e",
+    "--endpoint",
     type=str,
-    help=f'full api endpoint [{settings.CLOCKIFY_API_ENDPOINT}]',
+    help=f"full api endpoint [{settings.CLOCKIFY_API_ENDPOINT}]",
     default=settings.CLOCKIFY_API_ENDPOINT,
     required=True,
 )
 @pass_context
 def cli(ctx: Context, key: str, endpoint: str):
-    '''
-        This is clockify api usage command
-    '''
+    """
+    This is clockify api usage command
+    """
     if uri_validator(endpoint):
         settings.CLOCKIFY_API_KEY = key
         settings.CLOCKIFY_API_ENDPOINT = endpoint
@@ -52,15 +52,15 @@ def cli(ctx: Context, key: str, endpoint: str):
 @cli.command()
 @pass_context
 def user(ctx: Context):
-    '''
-        This api will return some needed information from user for
-        times-api
-    '''
+    """
+    This api will return some needed information from user for
+    times-api
+    """
     try:
         service: ApiClockifyService = ctx.service
         service.user()
     except KeyboardInterrupt as k:
-        logging.log(logging.DEBUG, f'process interupted! ({k})')
+        logging.log(logging.DEBUG, f"process interupted! ({k})")
         sys.exit(5)
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)
@@ -74,62 +74,68 @@ def user(ctx: Context):
 # ------------------------------------------------------------------------------
 @cli.command()
 @click.option(
-    '-w',
-    '--workspace-id',
+    "-w",
+    "--workspace-id",
     type=str,
-    help=f'workspace to use [{settings.CLOCKIFY_API_WORKSPACE_ID}]',
+    help=f"workspace to use [{settings.CLOCKIFY_API_WORKSPACE_ID}]",
     default=settings.CLOCKIFY_API_WORKSPACE_ID,
     required=True,
 )
 @click.option(
-    '-u',
-    '--user-id',
+    "-u",
+    "--user-id",
     type=str,
-    help=f'user to use [{settings.CLOCKIFY_API_USER_ID}]',
+    help=f"user to use [{settings.CLOCKIFY_API_USER_ID}]",
     default=settings.CLOCKIFY_API_USER_ID,
     required=True,
 )
 @click.option(
-    '-d',
-    '--days-to-subtract',
+    "-d",
+    "--days-to-subtract",
     type=int,
-    help='from now until how much days to collect [0]',
+    help="from until now or specific day, how much days to collect backwards [0]",
     default=0,
     required=True,
 )
 @click.option(
-    '-p',
-    '--page-size',
+    "-p",
+    "--page-size",
     type=int,
-    help='how much records should loaded (max 5000) [50]',
+    help="how much records should loaded (max 5000) [50]",
     default=50,
     required=True,
 )
 @click.option(
-    '-sp',
-    '--specific-day',
+    "-sp",
+    "--specific-day",
     type=str,
-    help='specific day to collect (YYYY-MM-DD) [None]',
+    help="specific day to start collect from (format: YYYY-MM-DD) [None]",
     default=None,
 )
 @click.option(
-    '-ps',
-    '--project-search',
+    "-ps",
+    "--project-search",
     type=str,
-    help='specific project name to filter for [None]',
+    help="specific project name to filter for (offline filter) [None]",
     default=None,
 )
 @click.option(
-    '-ts',
-    '--task-search',
+    "-ts",
+    "--task-search",
     type=str,
-    help='specific task name to filter for [None]',
+    help="specific task name to filter for (offline filter) [None]",
     default=None,
 )
 @click.option(
-    '-c',
-    '--combine',
-    help='if similar tasks should be combined [false]',
+    "-c",
+    "--combine",
+    help="if similar tasks should be combined into one bigger described task [false]",
+    is_flag=True,
+)
+@click.option(
+    "-b",
+    "--buffer",
+    help="if a buffer issue should be auto calculated [false]",
     is_flag=True,
 )
 @pass_context
@@ -142,12 +148,13 @@ def times(
     specific_day: str,
     project_search: str,
     task_search: str,
-    combine: bool
+    combine: bool,
+    buffer: bool,
 ):
-    '''
-        This api will print you work-time
-        HINT: run first user-api to get workspace ID and user ID
-    '''
+    """
+    This api will print you work-time
+    HINT: run first user-api to get workspace ID and user ID
+    """
     try:
         settings.CLOCKIFY_API_WORKSPACE_ID = workspace_id
         settings.CLOCKIFY_API_USER_ID = user_id
@@ -161,17 +168,11 @@ def times(
             project_name=project_search,
             task_name=task_search,
             combine=combine,
+            buffer=buffer,
         )
     except KeyboardInterrupt as k:
-        logging.log(logging.DEBUG, f'process interupted! ({k})')
+        logging.log(logging.DEBUG, f"process interrupted! ({k})")
         sys.exit(5)
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)
         sys.exit(2)
-
-
-# ------------------------------------------------------------------------------
-#
-#
-#
-# ------------------------------------------------------------------------------
