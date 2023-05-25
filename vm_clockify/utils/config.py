@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     #
     # --------------------------------------------------------------------------
     PROJECT_NAME: str = config("PROJECT_NAME", default="vm-clockify")
-    VERSION: str = config("VERSION", default="0.0.2")
+    VERSION: str = config("VERSION", default="1.1.0")
     TIME_ZONE: str = config("TIME_ZONE", default="Europe/Berlin")
     # CRITICAL | ERROR | SUCCESS | WARNING | NOTICE | INFO | VERBOSE | DEBUG | SPAM | NOTSET
     LOGGING_LEVEL: str = config("LOGGING_LEVEL", default="DEBUG")
