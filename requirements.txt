@@ -12,3 +12,4 @@ pytz
 types-pytz
 
 bs4
+holidays

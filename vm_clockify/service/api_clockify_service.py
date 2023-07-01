@@ -2,10 +2,11 @@ import json
 import logging
 import pickle
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Match, Optional, Tuple, Union
 from urllib.parse import parse_qs
 
+import holidays
 import httpx
 import verboselogs
 from httpx._types import HeaderTypes, QueryParamTypes
@@ -80,6 +81,83 @@ class ApiClockifyService:
         except Exception as e:
             logging.log(logging.CRITICAL, e, exc_info=True)
 
+    # --------------------------------------------------------------------------
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
+
+    def remaining_monthly_work_time(
+        self,
+        workspaceId: str,
+        userId: str,
+        year: int,
+        month: int,
+        taken_free_days: int = 0,
+        illness_days: int = 0
+    ) -> None:
+        if not settings.CLOCKIFY_API_KEY:
+            logging.log(logging.ERROR, "failed because CLOCKIFY_API_KEY is not set")
+            return None
+
+        page_size: int = 5000
+        first_day = date(year, month, 1).strftime(self.format_date_date_start)
+        last_day = (date(year, month + 1, 1) - timedelta(days=1)).strftime(self.format_date_date_end)
+        total_worked_time_hours: float = 0
+
+        parsed = self.request_records_from_clockify(workspaceId, userId, first_day, last_day, page_size)
+
+        for work in parsed:
+            if not isinstance(work, dict):
+                continue
+            timeDuration: Optional[str] = (
+                work.get("timeInterval", {}).get("duration", None)
+                if work.get("timeInterval") is not None
+                else None
+            )
+
+            if timeDuration and timeDuration.startswith(self.prefix_duration):
+                timeDuration_tmp = re.match(self.regex_duration, timeDuration)
+                if timeDuration_tmp is not None:
+                    c_hours = int(timeDuration_tmp.group(1)) if timeDuration_tmp.group(1) else 0
+                    c_minutes = int(timeDuration_tmp.group(2)) if timeDuration_tmp.group(2) else 0
+                    total_worked_time_hours = (total_worked_time_hours + (c_hours) + c_minutes/60)
+
+        remaining_hours = self.calculate_remaining_hours(year, month, total_worked_time_hours, free_days=taken_free_days, illness_days=illness_days)
+        logging.log(logging.INFO, f"Requested time-range : {first_day} - {last_day}")
+        logging.log(logging.INFO, f"Worked hours         : {total_worked_time_hours}")
+        logging.log(logging.INFO, f"Remaining hours      : {remaining_hours}")
+        logging.log(logging.INFO, f"Remaining days       : {remaining_hours/8}")
+
+    def calculate_remaining_hours(self, year: int, month: int, time_still_worked: float, work_time_hours: int = 8, free_days: int = 0, illness_days: int = 0):
+        total_work_days = self.get_total_work_days(year, month)
+        total_work_hours = total_work_days * work_time_hours  # Assuming 8 hours worked per day
+        holiday_list = self.get_holidays(year)
+        holiday_hours = sum([8 for date in holiday_list if date.month == month])
+
+        total_work_hours -= holiday_hours
+        total_work_hours -= free_days * 8  # Assuming 8 hours per taken free day
+        total_work_hours -= illness_days * 8  # Assuming 8 hours per illness day
+        remaining_hours = time_still_worked - total_work_hours  # Assuming 160 hours in a month
+        return remaining_hours
+
+    def get_total_work_days(self, year: int, month: int) -> int:
+        first_day = date(year, month, 1)
+        last_day = date(year, month + 1, 1) - timedelta(days=1)
+        total_days = (last_day - first_day).days + 1
+        total_work_days = sum(1 for day in range(total_days) if (first_day + timedelta(days=day)).weekday() < 5)
+        return total_work_days
+
+    def get_holidays(self, year):
+        holiday_list = holidays.country_holidays(country="DE", subdiv="BW", years=year)
+        return holiday_list
+
+    # --------------------------------------------------------------------------
+    #
+    #
+    #
+    # --------------------------------------------------------------------------
+
     def times(
         self,
         workspaceId: str,
@@ -93,9 +171,6 @@ class ApiClockifyService:
         buffer: bool = False,
     ) -> Optional[Dict[str, IssueTime]]:
         try:
-            if not settings.CLOCKIFY_API_KEY:
-                logging.log(logging.ERROR, "failed because CLOCKIFY_API_KEY is not set")
-                return None
 
             tmp_day: Optional[datetime] = datetime.now()
             start_day: Optional[str] = None
@@ -106,51 +181,27 @@ class ApiClockifyService:
             if specific_day is not None:
                 tmp_day = datetime.strptime(specific_day, self.format_date_day)
                 end_day = tmp_day.strftime(self.format_date_date_end)
+            if end_day is None:
+                logging.log(
+                    logging.ERROR, "failed to create end_day, can not processed"
+                )
+                exit(1)
+            logging.log(logging.DEBUG, end_day)
 
             if tmp_day is not None:
                 start_day = (tmp_day - timedelta(days=days_to_subtract)).strftime(
                     self.format_date_date_start
                 )
-
             if start_day is None:
                 logging.log(
                     logging.ERROR, "failed to create start_day, can not processed"
                 )
                 exit(1)
-
             logging.log(logging.DEBUG, start_day)
-            headers: HeaderTypes = {
-                "content-type": "application/json",
-                "X-Api-Key": settings.CLOCKIFY_API_KEY,
-            }
-            params: QueryParamTypes = [
-                ("hydrated", True),
-                ("page-size", page_size),
-                ("start", start_day),
-                ("end", end_day),
-            ]
-            path = f"workspaces/{workspaceId}/user/{userId}/time-entries"
-            with httpx.Client() as session:
-                res = session.get(
-                    f"{settings.CLOCKIFY_API_ENDPOINT}/{path}",
-                    headers=headers,
-                    params=params,
-                )
-                if res.status_code != 200:
-                    logging.log(
-                        logging.ERROR,
-                        f"api call to get time entries failed with code '{res.status_code}' because of '{res.text}'",
-                    )
-                    exit(1)
 
-                parsed: Any = json.loads(res.text)
+            parsed = self.request_records_from_clockify(workspaceId, userId, start_day, end_day, page_size)
+            if parsed is not None:
                 results: Dict[str, IssueTime] = {}
-                if not isinstance(parsed, list):
-                    logging.log(
-                        logging.ERROR,
-                        "api result could not be parsed as list, no function implemented for this case",
-                    )
-                    exit(1)
 
                 # proceed the parsed api list into its needed task information
                 self.proceed_work_issues(
@@ -178,6 +229,47 @@ class ApiClockifyService:
         except Exception as e:
             logging.log(logging.CRITICAL, e, exc_info=True)
         return None
+
+    def request_records_from_clockify(self, workspaceId: str, userId: str, start_day: str, end_day: str, page_size: int = 50) -> Any:
+        """
+            start and end day needs to be in format: "%Y-%m-%dT00:00:00.000Z"
+        """
+        if not settings.CLOCKIFY_API_KEY:
+            logging.log(logging.ERROR, "failed because CLOCKIFY_API_KEY is not set")
+            return None
+
+        headers: HeaderTypes = {
+            "content-type": "application/json",
+            "X-Api-Key": settings.CLOCKIFY_API_KEY,
+        }
+        params: QueryParamTypes = [
+            ("hydrated", True),
+            ("page-size", page_size),
+            ("start", start_day),
+            ("end", end_day),
+        ]
+        path = f"workspaces/{workspaceId}/user/{userId}/time-entries"
+        with httpx.Client() as session:
+            res = session.get(
+                f"{settings.CLOCKIFY_API_ENDPOINT}/{path}",
+                headers=headers,
+                params=params,
+            )
+            if res.status_code != 200:
+                logging.log(
+                    logging.ERROR,
+                    f"api call to get time entries failed with code '{res.status_code}' because of '{res.text}'",
+                )
+                exit(1)
+
+            parsed: Any = json.loads(res.text)
+            if not isinstance(parsed, list):
+                logging.log(
+                    logging.ERROR,
+                    "api result could not be parsed as list, no function implemented for this case",
+                )
+                exit(1)
+            return parsed
 
     def proceed_work_issues(
         self,

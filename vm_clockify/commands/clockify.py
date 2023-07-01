@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sys
 
@@ -61,6 +62,94 @@ def user(ctx: Context):
         service.user()
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f"process interupted! ({k})")
+        sys.exit(5)
+    except Exception as e:
+        logging.log(logging.CRITICAL, e, exc_info=True)
+        sys.exit(2)
+
+
+# ------------------------------------------------------------------------------
+#
+#
+#
+# ------------------------------------------------------------------------------
+@cli.command()
+@click.option(
+    "-w",
+    "--workspace-id",
+    type=str,
+    help=f"workspace to use [{settings.CLOCKIFY_API_WORKSPACE_ID}]",
+    default=settings.CLOCKIFY_API_WORKSPACE_ID,
+    required=True,
+)
+@click.option(
+    "-u",
+    "--user-id",
+    type=str,
+    help=f"user to use [{settings.CLOCKIFY_API_USER_ID}]",
+    default=settings.CLOCKIFY_API_USER_ID,
+    required=True,
+)
+@click.option(
+    "-y",
+    "--year",
+    type=int,
+    help=f"from until now or specific day, how much days to collect backwards [{datetime.datetime.now().year}]",
+    default=datetime.datetime.now().year,
+    required=True,
+)
+@click.option(
+    "-m",
+    "--month",
+    type=int,
+    help=f"from until now or specific day, how much days to collect backwards [{datetime.datetime.now().month}]",
+    default=datetime.datetime.now().month,
+    required=True,
+)
+@click.option(
+    "-f",
+    "--taken-free-days",
+    type=int,
+    help="free days taken as holiday for that month [0]",
+    default=0,
+    required=True,
+)
+@click.option(
+    "-i",
+    "--illness-days",
+    type=int,
+    help="illness days for that month [0]",
+    default=0,
+    required=True,
+)
+@pass_context
+def remaining_days(
+    ctx: Context,
+    workspace_id: str,
+    user_id: str,
+    year,
+    month,
+    taken_free_days=0,
+    illness_days=0
+):
+    """
+    This api will print you remaining work-time for a specific month in a year
+    HINT: run first user-api to get workspace ID and user ID
+    """
+    try:
+        settings.CLOCKIFY_API_WORKSPACE_ID = workspace_id
+        settings.CLOCKIFY_API_USER_ID = user_id
+        service: ApiClockifyService = ctx.service
+        service.remaining_monthly_work_time(
+            workspaceId=workspace_id,
+            userId=user_id,
+            year=year,
+            month=month,
+            taken_free_days=taken_free_days,
+            illness_days=illness_days,
+        )
+    except KeyboardInterrupt as k:
+        logging.log(logging.DEBUG, f"process interrupted! ({k})")
         sys.exit(5)
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)
