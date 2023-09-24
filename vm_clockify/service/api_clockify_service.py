@@ -169,6 +169,8 @@ class ApiClockifyService:
         task_name: Optional[str] = None,
         combine: bool = False,
         buffer: bool = False,
+        time_details: bool = False,
+        time_count: bool = True,
     ) -> Optional[Dict[str, IssueTime]]:
         try:
 
@@ -222,7 +224,7 @@ class ApiClockifyService:
                     pickle.dump(results, f)
 
                 # print the result for manual check or copy/past usage
-                self.print_result(results)
+                self.print_result(results, time_details, time_count)
                 # logging.log(logging.DEBUG, json.dumps(parsed, indent=4, sort_keys=False))
 
                 return results
@@ -461,10 +463,10 @@ class ApiClockifyService:
                 current_description=settings.WORK_TIME_DEFAULT_COMMENT,
             )
 
-    def print_result(self, results: Dict[str, IssueTime]):
+    def print_result(self, results: Dict[str, IssueTime], time_details: bool, time_count: bool):
         for key, value in results.items():
             # print a overview for the complete day work
-            if key.startswith(self.prefix_sum):
+            if key.startswith(self.prefix_sum) and time_count:
                 logging.log(
                     logging.INFO,
                     "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
@@ -488,8 +490,12 @@ class ApiClockifyService:
                     logging.INFO,
                     "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
                 )
+                logging.log(
+                    logging.INFO,
+                    "###################################################",
+                )
             # print issue per issue with information
-            else:
+            elif time_details:
                 # if value.date:
                 #     logging.log(verboselogs.NOTICE, "ID:")
                 #     logging.log(logging.INFO, f"  [*] {key}")
@@ -513,10 +519,10 @@ class ApiClockifyService:
                     logging.log(verboselogs.NOTICE, "DESCRIPTION:")
                     for description in value.description:
                         logging.log(logging.INFO, f"  - {description}")
-            logging.log(
-                logging.INFO,
-                "###################################################",
-            )
+                logging.log(
+                    logging.INFO,
+                    "###################################################",
+                )
 
     def gen_issue(
         self,

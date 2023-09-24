@@ -227,6 +227,18 @@ def remaining_days(
     help="if a buffer issue should be auto calculated [false]",
     is_flag=True,
 )
+@click.option(
+    "-td",
+    "--time-details",
+    help="list time details in the terminal output [false]",
+    is_flag=True,
+)
+@click.option(
+    "-tc",
+    "--time-count",
+    help="list time counters in the terminal output [true]",
+    is_flag=True,
+)
 @pass_context
 def times(
     ctx: Context,
@@ -239,6 +251,8 @@ def times(
     task_search: str,
     combine: bool,
     buffer: bool,
+    time_details: bool,
+    time_count: bool,
 ):
     """
     This api will print you work-time
@@ -258,6 +272,8 @@ def times(
             task_name=task_search,
             combine=combine,
             buffer=buffer,
+            time_details=time_details,
+            time_count=not time_count,
         )
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f"process interrupted! ({k})")
