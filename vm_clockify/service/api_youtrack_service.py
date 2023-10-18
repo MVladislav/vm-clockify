@@ -58,29 +58,21 @@ class ApiYoutrackService:
                         "usesMarkdown": True,
                         "date": date,
                         "text": description,
-                        "duration": {
-                            "presentation": f'{issue.duration.get("h",0)}h {issue.duration.get("m",0)}m'
-                        },
+                        "duration": {"presentation": f'{issue.duration.get("h",0)}h {issue.duration.get("m",0)}m'},
                     }
                     if "..." in issue.issue[0]:
                         logging.log(logging.INFO, "for description ->")
                         logging.log(logging.INFO, issue.description)
                         issue.issue[0] = issue.issue[0].replace(
                             "...",
-                            input(
-                                f'==> enter number to replace "..." in {issue.issue[0]}: '
-                            ),
+                            input(f'==> enter number to replace "..." in {issue.issue[0]}: '),
                         )
                     if issue.issue_type:
-                        issue_type_id = self.get_worktype_id(
-                            session, headers, issue.issue[0], issue.issue_type
-                        )
+                        issue_type_id = self.get_worktype_id(session, headers, issue.issue[0], issue.issue_type)
                         if issue_type_id:
                             body["type"] = {"id": issue_type_id}
 
-                    is_issue_uploaded = self.check_issue_exists(
-                        session, headers, issue.issue[0], description, issue.date, date
-                    )
+                    is_issue_uploaded = self.check_issue_exists(session, headers, issue.issue[0], description, issue.date, date)
 
                     if is_issue_uploaded:
                         logging.log(
@@ -129,11 +121,7 @@ class ApiYoutrackService:
             if res.status_code == 200:
                 parsed = json.loads(res.text)
                 try:
-                    parsed = next(
-                        item
-                        for item in parsed
-                        if item["text"] == desc and item["date"] == start_end
-                    )
+                    parsed = next(item for item in parsed if item["text"] == desc and item["date"] == start_end)
                 except StopIteration:
                     parsed = None
 
@@ -144,9 +132,7 @@ class ApiYoutrackService:
             pass
         return False
 
-    def get_worktype_id(
-        self, session: httpx.Client, headers, issue_id: str, issue_type: str
-    ) -> Optional[str]:
+    def get_worktype_id(self, session: httpx.Client, headers, issue_id: str, issue_type: str) -> Optional[str]:
         try:
             projectID = self.get_project_id(session, headers, issue_id)
             if projectID:
@@ -158,18 +144,12 @@ class ApiYoutrackService:
                 )
                 if res.status_code == 200:
                     parsed = json.loads(res.text)
-                    return str(
-                        next(item for item in parsed if item["name"] == issue_type)[
-                            "id"
-                        ]
-                    )
+                    return str(next(item for item in parsed if item["name"] == issue_type)["id"])
         except Exception as e:
             logging.log(logging.CRITICAL, e, exc_info=True)
         return None
 
-    def get_project_id(
-        self, session: httpx.Client, headers, issue_id: str
-    ) -> Optional[str]:
+    def get_project_id(self, session: httpx.Client, headers, issue_id: str) -> Optional[str]:
         try:
             if issue_id:
                 fields = "id,name"

@@ -32,9 +32,7 @@ class LogHelper:
         # create a log object from verboselogs
         verboselogs.install()
 
-        for logger_name in [logging.getLogger()] + [
-            logging.getLogger(name) for name in logging.root.manager.loggerDict
-        ]:
+        for logger_name in [logging.getLogger()] + [logging.getLogger(name) for name in logging.root.manager.loggerDict]:
             for handler in logger_name.handlers:
                 logger_name.removeHandler(handler)
             # define log level default

@@ -37,9 +37,7 @@ print()
 class ComplexCLI(click.MultiCommand):
     def list_commands(self, ctx):
         rv = []
-        for filename in os.listdir(
-            os.path.join(os.path.dirname(__file__), "./commands")
-        ):
+        for filename in os.listdir(os.path.join(os.path.dirname(__file__), "./commands")):
             if filename.endswith(".py") and not filename.startswith("__"):
                 rv.append(filename[:-3])
         rv.sort()
@@ -139,8 +137,6 @@ def cli(
     settings.DISABLE_SPLIT_PROJECT = disable_split_project
     settings.DISABLE_SPLIT_HOST = disable_split_host
     # INIT: log helper global
-    LogHelper(
-        logging_verbose=settings.LOGGING_VERBOSE, logging_level=settings.LOGGING_LEVEL
-    )
+    LogHelper(logging_verbose=settings.LOGGING_VERBOSE, logging_level=settings.LOGGING_LEVEL)
     logging.log(logging.DEBUG, "init start_up...")
     settings.print()

@@ -66,17 +66,11 @@ class ApiClockifyService:
                 "X-Api-Key": settings.CLOCKIFY_API_KEY,
             }
             with httpx.Client() as session:
-                res = session.get(
-                    f"{settings.CLOCKIFY_API_ENDPOINT}/user", headers=headers
-                )
+                res = session.get(f"{settings.CLOCKIFY_API_ENDPOINT}/user", headers=headers)
                 parsed = json.loads(res.text)
                 logging.log(logging.INFO, f'USER ID             : {parsed["id"]}')
-                logging.log(
-                    logging.INFO, f'ACTIVE WORKSPACE    : {parsed["activeWorkspace"]}'
-                )
-                logging.log(
-                    logging.INFO, f'DEFAULT WORKSPACE   : {parsed["defaultWorkspace"]}'
-                )
+                logging.log(logging.INFO, f'ACTIVE WORKSPACE    : {parsed["activeWorkspace"]}')
+                logging.log(logging.INFO, f'DEFAULT WORKSPACE   : {parsed["defaultWorkspace"]}')
         # logging.log(logging.DEBUG, json.dumps(parsed, indent=4, sort_keys=False))
         except Exception as e:
             logging.log(logging.CRITICAL, e, exc_info=True)
@@ -94,7 +88,7 @@ class ApiClockifyService:
         year: int,
         month: int,
         taken_free_days: int = 0,
-        illness_days: int = 0
+        illness_days: int = 0,
     ) -> None:
         if not settings.CLOCKIFY_API_KEY:
             logging.log(logging.ERROR, "failed because CLOCKIFY_API_KEY is not set")
@@ -111,9 +105,7 @@ class ApiClockifyService:
             if not isinstance(work, dict):
                 continue
             timeDuration: Optional[str] = (
-                work.get("timeInterval", {}).get("duration", None)
-                if work.get("timeInterval") is not None
-                else None
+                work.get("timeInterval", {}).get("duration", None) if work.get("timeInterval") is not None else None
             )
 
             if timeDuration and timeDuration.startswith(self.prefix_duration):
@@ -121,15 +113,19 @@ class ApiClockifyService:
                 if timeDuration_tmp is not None:
                     c_hours = int(timeDuration_tmp.group(1)) if timeDuration_tmp.group(1) else 0
                     c_minutes = int(timeDuration_tmp.group(2)) if timeDuration_tmp.group(2) else 0
-                    total_worked_time_hours = (total_worked_time_hours + (c_hours) + c_minutes/60)
+                    total_worked_time_hours = total_worked_time_hours + (c_hours) + c_minutes / 60
 
-        remaining_hours = self.calculate_remaining_hours(year, month, total_worked_time_hours, free_days=taken_free_days, illness_days=illness_days)
+        remaining_hours = self.calculate_remaining_hours(
+            year, month, total_worked_time_hours, free_days=taken_free_days, illness_days=illness_days
+        )
         logging.log(logging.INFO, f"Requested time-range : {first_day} - {last_day}")
         logging.log(logging.INFO, f"Worked hours         : {total_worked_time_hours}")
         logging.log(logging.INFO, f"Remaining hours      : {remaining_hours}")
         logging.log(logging.INFO, f"Remaining days       : {remaining_hours/8}")
 
-    def calculate_remaining_hours(self, year: int, month: int, time_still_worked: float, work_time_hours: int = 8, free_days: int = 0, illness_days: int = 0):
+    def calculate_remaining_hours(
+        self, year: int, month: int, time_still_worked: float, work_time_hours: int = 8, free_days: int = 0, illness_days: int = 0
+    ):
         total_work_days = self.get_total_work_days(year, month)
         total_work_hours = total_work_days * work_time_hours  # Assuming 8 hours worked per day
         holiday_list = self.get_holidays(year)
@@ -173,7 +169,6 @@ class ApiClockifyService:
         time_count: bool = True,
     ) -> Optional[Dict[str, IssueTime]]:
         try:
-
             tmp_day: Optional[datetime] = datetime.now()
             start_day: Optional[str] = None
             end_day: Optional[str] = None
@@ -184,20 +179,14 @@ class ApiClockifyService:
                 tmp_day = datetime.strptime(specific_day, self.format_date_day)
                 end_day = tmp_day.strftime(self.format_date_date_end)
             if end_day is None:
-                logging.log(
-                    logging.ERROR, "failed to create end_day, can not processed"
-                )
+                logging.log(logging.ERROR, "failed to create end_day, can not processed")
                 exit(1)
             logging.log(logging.DEBUG, end_day)
 
             if tmp_day is not None:
-                start_day = (tmp_day - timedelta(days=days_to_subtract)).strftime(
-                    self.format_date_date_start
-                )
+                start_day = (tmp_day - timedelta(days=days_to_subtract)).strftime(self.format_date_date_start)
             if start_day is None:
-                logging.log(
-                    logging.ERROR, "failed to create start_day, can not processed"
-                )
+                logging.log(logging.ERROR, "failed to create start_day, can not processed")
                 exit(1)
             logging.log(logging.DEBUG, start_day)
 
@@ -206,9 +195,7 @@ class ApiClockifyService:
                 results: Dict[str, IssueTime] = {}
 
                 # proceed the parsed api list into its needed task information
-                self.proceed_work_issues(
-                    results, parsed, combine, project_name, task_name
-                )
+                self.proceed_work_issues(results, parsed, combine, project_name, task_name)
 
                 # add also a generic buffer issue for not specific work
                 if buffer:
@@ -232,9 +219,11 @@ class ApiClockifyService:
             logging.log(logging.CRITICAL, e, exc_info=True)
         return None
 
-    def request_records_from_clockify(self, workspaceId: str, userId: str, start_day: str, end_day: str, page_size: int = 50) -> Any:
+    def request_records_from_clockify(
+        self, workspaceId: str, userId: str, start_day: str, end_day: str, page_size: int = 50
+    ) -> Any:
         """
-            start and end day needs to be in format: "%Y-%m-%dT00:00:00.000Z"
+        start and end day needs to be in format: "%Y-%m-%dT00:00:00.000Z"
         """
         if not settings.CLOCKIFY_API_KEY:
             logging.log(logging.ERROR, "failed because CLOCKIFY_API_KEY is not set")
@@ -287,37 +276,23 @@ class ApiClockifyService:
 
             # parse first all needed values from json
             timeStart: Optional[str] = (
-                work.get("timeInterval", {}).get("start", None)
-                if work.get("timeInterval") is not None
-                else None
+                work.get("timeInterval", {}).get("start", None) if work.get("timeInterval") is not None else None
             )
             timeDuration: Optional[str] = (
-                work.get("timeInterval", {}).get("duration", None)
-                if work.get("timeInterval") is not None
-                else None
+                work.get("timeInterval", {}).get("duration", None) if work.get("timeInterval") is not None else None
             )
             current_timeDuration = None
             if timeDuration and timeDuration.startswith(self.prefix_duration):
                 timeDuration_tmp = re.match(self.regex_duration, timeDuration)
                 if timeDuration_tmp is not None:
                     current_timeDuration = {
-                        "h": int(timeDuration_tmp.group(1))
-                        if timeDuration_tmp.group(1)
-                        else 0,
-                        "m": int(timeDuration_tmp.group(2))
-                        if timeDuration_tmp.group(2)
-                        else 0,
+                        "h": int(timeDuration_tmp.group(1)) if timeDuration_tmp.group(1) else 0,
+                        "m": int(timeDuration_tmp.group(2)) if timeDuration_tmp.group(2) else 0,
                     }
 
-            current_task: Optional[str] = (
-                work.get("task", {}).get("name", None)
-                if work.get("task") is not None
-                else None
-            )
+            current_task: Optional[str] = work.get("task", {}).get("name", None) if work.get("task") is not None else None
             current_project: Optional[str] = (
-                work.get("project", {}).get("name", None)
-                if work.get("project") is not None
-                else None
+                work.get("project", {}).get("name", None) if work.get("project") is not None else None
             )
 
             # if combine is true, same tasks will combine into one
@@ -328,24 +303,12 @@ class ApiClockifyService:
 
             current_description: str = str(work.get("description"))
             # try to parse the start date into datetime object
-            current_timeStart: Optional[datetime] = (
-                datetime.strptime(timeStart, self.format_date_from)
-                if timeStart
-                else None
-            )
+            current_timeStart: Optional[datetime] = datetime.strptime(timeStart, self.format_date_from) if timeStart else None
 
             # filter
-            if (
-                current_project is not None
-                and project_name is not None
-                and project_name not in current_project
-            ):
+            if current_project is not None and project_name is not None and project_name not in current_project:
                 current_project = None
-            if (
-                current_task is not None
-                and task_name is not None
-                and task_name not in current_task
-            ):
+            if current_task is not None and task_name is not None and task_name not in current_task:
                 current_task = None
 
             # if time can be parsed, start to save the result
@@ -357,9 +320,7 @@ class ApiClockifyService:
             current_day: str = current_timeStart.strftime(self.format_date_day)
 
             # get needed info like the id from issue
-            current_issue, current_issue_type = self.parse_issue_extra_info(
-                current_task, current_project
-            )
+            current_issue, current_issue_type = self.parse_issue_extra_info(current_task, current_project)
 
             if current_issue is None:
                 logging.log(
@@ -420,21 +381,14 @@ class ApiClockifyService:
         results: Dict[str, IssueTime],
     ) -> None:
         if (
-            (
-                task_name is not None or project_name is not None
-            )  # TODO: check why this was checked
+            (task_name is not None or project_name is not None)  # TODO: check why this was checked
             or settings.WORK_TIME_DEFAULT_ISSUE is None
             or settings.WORK_TIME_DEFAULT_COMMENT is None
         ):
             return
 
         for key, value in results.copy().items():
-            if (
-                not key.startswith(self.prefix_sum)
-                or value.project is None
-                or value.task is None
-                or value.date is None
-            ):
+            if not key.startswith(self.prefix_sum) or value.project is None or value.task is None or value.date is None:
                 continue
 
             # calc the rest time
@@ -447,9 +401,7 @@ class ApiClockifyService:
                 continue
 
             # calc into correct format
-            new_hour, new_minutes = self.convert_time_split(
-                opened_rest_time * 60.0 * 60.0
-            )
+            new_hour, new_minutes = self.convert_time_split(opened_rest_time * 60.0 * 60.0)
             current_timeDuration: Dict[str, int] = {"h": new_hour, "m": new_minutes}
             # add to issues
             self.gen_issue(
@@ -479,9 +431,7 @@ class ApiClockifyService:
                 opened_rest_time = settings.WORK_TIME_DEFAULT_HOURS - (
                     value.duration.get("h", 0) + (value.duration.get("m", 0) / 60)
                 )
-                new_hour, new_minutes = self.convert_time_split(
-                    opened_rest_time * 60 * 60
-                )
+                new_hour, new_minutes = self.convert_time_split(opened_rest_time * 60 * 60)
                 logging.log(
                     logging.INFO,
                     f"  [*] REST  : {new_hour}h {new_minutes}m",
@@ -565,10 +515,7 @@ class ApiClockifyService:
         # this is done with a check, if combine mode is activated
         # to verify only unique issue numbers are set in clockify for a task
         # else this should be check what is happen
-        if (
-            isinstance(current_issue, str)
-            and current_issue not in results[current_id].issue
-        ):
+        if isinstance(current_issue, str) and current_issue not in results[current_id].issue:
             results[current_id].issue.append(current_issue)
             if len(results[current_id].issue) > 1:
                 logging.log(

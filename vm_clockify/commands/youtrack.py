@@ -9,8 +9,7 @@ import click
 from ..service.api_clockify_service import IssueTime
 from ..service.api_youtrack_service import ApiYoutrackService
 from ..utils.config import settings
-from ..utils.utilsHelper import (Context, create_service_folder, pass_context,
-                                 uri_validator)
+from ..utils.utilsHelper import Context, create_service_folder, pass_context, uri_validator
 
 
 # ------------------------------------------------------------------------------

@@ -130,7 +130,7 @@ def remaining_days(
     year,
     month,
     taken_free_days=0,
-    illness_days=0
+    illness_days=0,
 ):
     """
     This api will print you remaining work-time for a specific month in a year

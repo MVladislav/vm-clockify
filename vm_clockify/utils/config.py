@@ -32,9 +32,7 @@ class Settings(BaseSettings):
     #
     # --------------------------------------------------------------------------
     BASE_PATH: str = config("VM_BASE_PATH", default=".")
-    DISABLE_SPLIT_PROJECT: bool = config(
-        "DISABLE_SPLIT_PROJECT", cast=bool, default=False
-    )
+    DISABLE_SPLIT_PROJECT: bool = config("DISABLE_SPLIT_PROJECT", cast=bool, default=False)
     DISABLE_SPLIT_HOST: bool = config("DISABLE_SPLIT_HOST", cast=bool, default=False)
 
     # ------------------------------------------------------------------------------
@@ -42,30 +40,18 @@ class Settings(BaseSettings):
     # GENERAL TIME SETTINGS
     #
     # ------------------------------------------------------------------------------
-    WORK_TIME_DEFAULT_HOURS: int = config(
-        "WORK_TIME_DEFAULT_HOURS", cast=int, default=8
-    )
-    WORK_TIME_DEFAULT_ISSUE: Union[str, None] = config(
-        "WORK_TIME_DEFAULT_ISSUE", default=None
-    )
-    WORK_TIME_DEFAULT_COMMENT: Union[str, None] = config(
-        "WORK_TIME_DEFAULT_COMMENT", default=None
-    )
+    WORK_TIME_DEFAULT_HOURS: int = config("WORK_TIME_DEFAULT_HOURS", cast=int, default=8)
+    WORK_TIME_DEFAULT_ISSUE: Union[str, None] = config("WORK_TIME_DEFAULT_ISSUE", default=None)
+    WORK_TIME_DEFAULT_COMMENT: Union[str, None] = config("WORK_TIME_DEFAULT_COMMENT", default=None)
     # ------------------------------------------------------------------------------
     #
     # CLOCKIFY
     #
     # ------------------------------------------------------------------------------
-    CLOCKIFY_API_ENDPOINT: str = config(
-        "CLOCKIFY_API_ENDPOINT", default="https://api.clockify.me/api/v1"
-    )
+    CLOCKIFY_API_ENDPOINT: str = config("CLOCKIFY_API_ENDPOINT", default="https://api.clockify.me/api/v1")
     CLOCKIFY_API_KEY: Union[str, None] = config("CLOCKIFY_API_KEY", default=None)
-    CLOCKIFY_API_WORKSPACE_ID: Union[str, None] = config(
-        "CLOCKIFY_API_WORKSPACE_ID", default=None
-    )
-    CLOCKIFY_API_USER_ID: Union[str, None] = config(
-        "CLOCKIFY_API_USER_ID", default=None
-    )
+    CLOCKIFY_API_WORKSPACE_ID: Union[str, None] = config("CLOCKIFY_API_WORKSPACE_ID", default=None)
+    CLOCKIFY_API_USER_ID: Union[str, None] = config("CLOCKIFY_API_USER_ID", default=None)
     CLOCKIFY_TMP_FILE: str = "times"
     # ------------------------------------------------------------------------------
     #
@@ -73,9 +59,7 @@ class Settings(BaseSettings):
     #
     # ------------------------------------------------------------------------------
     # base url needed, entered as option on call
-    YOUTRACK_API_ENDPOINT: Union[str, None] = config(
-        "YOUTRACK_API_ENDPOINT", default=None
-    )
+    YOUTRACK_API_ENDPOINT: Union[str, None] = config("YOUTRACK_API_ENDPOINT", default=None)
     YOUTRACK_API_ENDPOINT_SUFFIX: Union[str, None] = "youtrack/api"
     YOUTRACK_API_KEY: Union[str, None] = config("YOUTRACK_API_KEY", default=None)
     # ------------------------------------------------------------------------------
@@ -113,9 +97,7 @@ class Settings(BaseSettings):
                 verboselogs.VERBOSE,
                 f"PROJECT_NAME           : {Bold(self.PROJECT_NAME)}",
             )
-            logging.log(
-                verboselogs.VERBOSE, f"VERSION                : {Bold(self.VERSION)}"
-            )
+            logging.log(verboselogs.VERBOSE, f"VERSION                : {Bold(self.VERSION)}")
             logging.log(
                 verboselogs.VERBOSE,
                 f"LOGGING-LEVEL          : {Bold(self.LOGGING_LEVEL)}",

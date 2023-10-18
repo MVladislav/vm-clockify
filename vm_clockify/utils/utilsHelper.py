@@ -44,9 +44,7 @@ def create_service_folder(
     creates a folder with name optional host under base path
     """
     try:
-        path = create_service_path(
-            host=host, split_host=split_host, split_project=split_project
-        )
+        path = create_service_path(host=host, split_host=split_host, split_project=split_project)
         path = f"{path}/{name}" if name is not None else path
         if path.startswith("./"):
             path = f"{os.getcwd()}{path[1:]}"
@@ -55,9 +53,7 @@ def create_service_folder(
             return path
 
         else:
-            logging.log(
-                logging.ERROR, f'failed to create path "{path}", check permission'
-            )
+            logging.log(logging.ERROR, f'failed to create path "{path}", check permission')
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)
     sys.exit(1)
@@ -85,9 +81,7 @@ def create_service_path(
     creates a path name, will used in call by "create_service_folder"
     """
     split_host = not settings.DISABLE_SPLIT_HOST if split_host is None else split_host
-    split_project = (
-        not settings.DISABLE_SPLIT_PROJECT if split_project is None else split_project
-    )
+    split_project = not settings.DISABLE_SPLIT_PROJECT if split_project is None else split_project
     if split_host and host is not None:
         host = slugify(host)
         host = "" if host is None else f"/{host}"
@@ -144,10 +138,6 @@ def slugify(value: Union[str, None], allow_unicode: bool = False) -> Union[str, 
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)
     else:
-        value = (
-            unicodedata.normalize("NFKD", value)
-            .encode("ascii", "ignore")
-            .decode("ascii")
-        )
+        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
     value = re.sub(r"[^\w\s-]", "", value.lower())
     return re.sub(r"[-\s]+", "-", value).strip("-_")

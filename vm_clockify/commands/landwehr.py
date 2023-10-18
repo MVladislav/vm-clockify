@@ -30,9 +30,7 @@ def cli(ctx: Context):
 @click.option("-y", "--year", type=int, help="year to add new time", required=True)
 @click.option("-m", "--month", type=int, help="month to add new time", required=True)
 @click.option("-d", "--day", type=int, help="day to add new time", required=True)
-@click.option(
-    "-a", "--auftrag", type=str, help="auftrag where to add the time to", required=True
-)
+@click.option("-a", "--auftrag", type=str, help="auftrag where to add the time to", required=True)
 @pass_context
 def upload(ctx: Context, year: int, month: int, day: int, auftrag: str):
     """

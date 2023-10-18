@@ -181,9 +181,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def get_time(
-        self, session: httpx.Client, year: int, month: int
-    ) -> Optional[httpx.Response]:
+    def get_time(self, session: httpx.Client, year: int, month: int) -> Optional[httpx.Response]:
         logging.log(logging.INFO, "try to get current times...")
 
         # ----------------------------------------------------------------------
@@ -275,18 +273,13 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def add_time(
-        self, session: httpx.Client, auftrag: str, year: int, month: int, day: int
-    ) -> Optional[httpx.Response]:
+    def add_time(self, session: httpx.Client, auftrag: str, year: int, month: int, day: int) -> Optional[httpx.Response]:
         logging.log(logging.INFO, "try to add new current times...")
 
         time_to_set: datetime = datetime(year=year, month=month, day=day)
         time_to_set_str: str = time_to_set.strftime(self.format_date_day_key)
 
-        if (
-            self.always_worked is not None
-            and self.always_worked.get(time_to_set_str, None) is None
-        ):
+        if self.always_worked is not None and self.always_worked.get(time_to_set_str, None) is None:
             work_time_from_h: int = 8
             work_time_from_m: int = 0
             work_time_from: datetime = datetime(
@@ -298,9 +291,7 @@ class ApiLandwehrService:
             )
             work_time_to_h: int = 17
             work_time_to_m: int = 0
-            work_time_to: datetime = datetime(
-                year=1970, month=2, day=1, hour=work_time_to_h, minute=work_time_to_m
-            )
+            work_time_to: datetime = datetime(year=1970, month=2, day=1, hour=work_time_to_h, minute=work_time_to_m)
 
             break_time_from_h: int = 12
             break_time_from_m: int = 0
@@ -313,13 +304,9 @@ class ApiLandwehrService:
             )
             break_time_to_h: int = 13
             break_time_to_m: int = 0
-            break_time_to: datetime = datetime(
-                year=1970, month=2, day=1, hour=break_time_to_h, minute=break_time_to_m
-            )
+            break_time_to: datetime = datetime(year=1970, month=2, day=1, hour=break_time_to_h, minute=break_time_to_m)
 
-            work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (
-                break_time_to_h - break_time_from_h
-            )
+            work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (break_time_to_h - break_time_from_h)
             work_time_days_worked: float = work_time_hours_worked / 8
 
             PRADO_CALLBACK_PARAMETER = {
@@ -339,15 +326,11 @@ class ApiLandwehrService:
                             {
                                 "von": {
                                     "date": f"1970-02-01T{(break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
-                                    "datum": break_time_from.strftime(
-                                        self.format_date_time
-                                    ),
+                                    "datum": break_time_from.strftime(self.format_date_time),
                                 },
                                 "bis": {
                                     "date": f"1970-02-01T{(break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
-                                    "datum": break_time_to.strftime(
-                                        self.format_date_time
-                                    ),
+                                    "datum": break_time_to.strftime(self.format_date_time),
                                 },
                             }
                         ],
@@ -458,23 +441,12 @@ class ApiLandwehrService:
                         elif "datum" in attrs:
                             val["date"] = td.text
                         elif "arbeit" in attrs:
-                            val["work_start"] = td.find(
-                                "input", attrs={"class": "von"}
-                            ).get("value")
-                            val["work_end"] = td.find(
-                                "input", attrs={"class": "bis"}
-                            ).get("value")
+                            val["work_start"] = td.find("input", attrs={"class": "von"}).get("value")
+                            val["work_end"] = td.find("input", attrs={"class": "bis"}).get("value")
                         elif "pause" in attrs:
-                            val["pause_start"] = td.find(
-                                "input", attrs={"class": "von"}
-                            ).get("value")
-                            val["pause_end"] = td.find(
-                                "input", attrs={"class": "bis"}
-                            ).get("value")
-                    if (
-                        val.get("date", None) is not None
-                        and val.get("work_start", None) is not None
-                    ):
+                            val["pause_start"] = td.find("input", attrs={"class": "von"}).get("value")
+                            val["pause_end"] = td.find("input", attrs={"class": "bis"}).get("value")
+                    if val.get("date", None) is not None and val.get("work_start", None) is not None:
                         table_data[val.get("date")] = val
 
                 self.always_worked = table_data
