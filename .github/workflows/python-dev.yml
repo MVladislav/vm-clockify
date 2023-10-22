@@ -97,7 +97,7 @@ jobs:
           tee pytest.log
 
       - name: upload all logs as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: python test reports
           path: |
@@ -141,7 +141,7 @@ jobs:
         run: python3 setup.py sdist
 
       - name: archive production artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.PROJECT_NAME }}
           path: |
