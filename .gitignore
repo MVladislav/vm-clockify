@@ -7,8 +7,8 @@
 !.vscode/**
 !vm_clockify/
 !vm_clockify/**
-!scripts/
-!scripts/**
+!logs/
+!logs/.gitempty
 !tests-start.sh
 
 !.dockerignore
@@ -20,7 +20,7 @@
 !README.md
 !SECURITY.md
 !docker-compose.yaml
-!requirements_dev.txt
+!requirements-dev.txt
 !requirements.txt
 !pyproject.toml
 !setup.cfg

@@ -62,7 +62,7 @@ jobs:
           pip3 install pylint flake8 pytest
           # install requirements if no setup.py is existing, else it will install in next step
           if [[ -f requirements.txt && ! -f setup.py ]]; then pip3 install -r requirements.txt; fi
-          pip3 install -r requirements_dev.txt
+          pip3 install -r requirements-dev.txt
           pip3 install tox-gh-actions
 
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
