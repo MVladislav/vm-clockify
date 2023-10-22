@@ -1,0 +1,64 @@
+name: Python code quality and tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+env:
+  DEFAULT_PYTHON: "3.11"
+  PROJECT_PATH: "vm_clockify"
+
+jobs:
+  code-quality:
+    name: Check code quality
+    runs-on: ubuntu-latest
+
+    steps:
+      # https://github.com/actions/checkout
+      - name: Checkout repository
+        uses: "actions/checkout@v4"
+
+      # https://github.com/actions/setup-python
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        id: python
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+          cache-dependency-path: "requirements*"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      # Following steps cannot run by pre-commit.ci as repo = local
+      - name: Run mypy
+        run: mypy ${{ env.PROJECT_PATH }}/
+      - name: Pylint review
+        run: pylint ${{ env.PROJECT_PATH }}/
+
+  tests:
+    runs-on: ubuntu-latest
+    name: Run tests
+    steps:
+      # https://github.com/actions/checkout
+      - name: Checkout repository
+        uses: "actions/checkout@v4"
+
+      # https://github.com/actions/setup-python
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        id: python
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+          cache: "pip"
+          cache-dependency-path: "requirements*"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run pytest
+        run: pytest --cov=./ --cov-report=xml
