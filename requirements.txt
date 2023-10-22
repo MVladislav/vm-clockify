@@ -1,15 +1,14 @@
-starlette
-click
-coloredlogs
-verboselogs
-pydantic
-string-color
+bs4==0.0.1
+click==8.1.7
+coloredlogs==15.0.1
+holidays==0.35
+httpx==1.0.0b0
+pydantic==2.4.2
+pydantic-settings==2.0.3
+pytz==2023.3.post1
+setuptools==68.2.2
 
-httpx
-setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
-
-pytz
-types-pytz
-
-bs4
-holidays
+starlette==0.31.1
+string-color==1.2.3
+types-pytz==2023.3.1.1
+verboselogs==1.7

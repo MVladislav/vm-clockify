@@ -1,18 +1,17 @@
-'''
-    will setup the project, by install it local
-    with needed dependencies
-'''
+"""Will setup the project, by install it local with needed dependencies."""
 from setuptools import setup
 
 
-def main():
+def main() -> None:
+    """Start install."""
     setup(
         install_requires=read_requirements(),
-        entry_points='''
+        entry_points="""
             [console_scripts]
             vm-clockify=vm_clockify.main:cli
-        ''',
+        """,
     )
+
 
 # ------------------------------------------------------------------------------
 #
@@ -21,24 +20,19 @@ def main():
 # ------------------------------------------------------------------------------
 
 
-def read_long_description():
-    '''
-        load the readme to add as long description
-    '''
-    with open('README.md', 'r', encoding='utf-8') as fh:
+def read_long_description() -> str:
+    """Load the readme to add as long description."""
+    with open("README.md", encoding="utf-8") as fh:
         long_description = fh.read()
     return long_description
 
 
-def read_requirements():
-    '''
-        load and read the dependencies
-        from the requirements.txt file
-        and return them as a list
-    '''
-    with open('requirements.txt', 'r', encoding='utf-8') as req:
-        requirements = req.read().split('\n')
+def read_requirements() -> list[str]:
+    """Read the requirements.txt file."""
+    with open("requirements.txt", encoding="utf-8") as req:
+        requirements = req.read().split("\n")
     return requirements
+
 
 # ------------------------------------------------------------------------------
 #

@@ -110,7 +110,8 @@ $python3 -m pip install .
 or
 
 ```sh
-$python3 -m venv ./venv
-$source venv/bin/activate
+$python3 -m pip install virtualenv --break-system-packages
+$python3 -m venv venv
+$source ./venv/bin/activate
 $python3 -m pip install -v --editable .
 ```

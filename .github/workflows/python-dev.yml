@@ -18,7 +18,7 @@ on:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 env:
-  GIT_BRANCH_NAME: "${{ github.ref }}" # ${GIT_BRANCH_NAME##*/}
+  GIT_BRANCH_NAME: "${{ github.ref }}"
   GIT_REPOSITORY_NAME: "${{ github.event.repository.name }}"
 
   PROJECT_NAME: vm-clockify
@@ -194,5 +194,3 @@ jobs:
 
       - name: install final result
         run: pip3 install ${{ env.PROJECT_NAME }}-*/
-
-      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
