@@ -61,7 +61,7 @@ def user(ctx: Context):
         service: ApiClockifyService = ctx.service
         service.user()
     except KeyboardInterrupt as k:
-        logging.log(logging.DEBUG, f"process interupted! ({k})")
+        logging.log(logging.DEBUG, f"process interrupted! ({k})")
         sys.exit(5)
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)

@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import bs4 as bs
 import httpx
@@ -29,13 +29,13 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    PRADO_PAGESTATE: Union[str, None] = None
-    SSID: Union[str, None] = None
+    PRADO_PAGESTATE: str | None = None
+    SSID: str | None = None
     format_date_day = "%Y-%m-%d"
     format_date_day_key = "%d.%m.%Y"
     format_date_time = "%H:%M:%S"
 
-    always_worked: Optional[Dict[str, Any]] = None
+    always_worked: dict[str, Any] | None = None
 
     # --------------------------------------------------------------------------
     #
@@ -181,7 +181,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def get_time(self, session: httpx.Client, year: int, month: int) -> Optional[httpx.Response]:
+    def get_time(self, session: httpx.Client, year: int, month: int) -> httpx.Response | None:
         logging.log(logging.INFO, "try to get current times...")
 
         # ----------------------------------------------------------------------
@@ -273,7 +273,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def add_time(self, session: httpx.Client, auftrag: str, year: int, month: int, day: int) -> Optional[httpx.Response]:
+    def add_time(self, session: httpx.Client, auftrag: str, year: int, month: int, day: int) -> httpx.Response | None:
         logging.log(logging.INFO, "try to add new current times...")
 
         time_to_set: datetime = datetime(year=year, month=month, day=day)
@@ -414,7 +414,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def get_prado_pagestate(self, text: Union[str, None]):
+    def get_prado_pagestate(self, text: str | None):
         if text is not None:
             soup = bs.BeautifulSoup(text, "lxml")
             prado_pagestate_id = soup.find("input", attrs={"id": "PRADO_PAGESTATE"})
@@ -422,7 +422,7 @@ class ApiLandwehrService:
                 self.PRADO_PAGESTATE = prado_pagestate_id.get("value")
                 logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.PRADO_PAGESTATE}")
 
-    def html_table_to_json(self, text: Union[str, None]) -> None:
+    def html_table_to_json(self, text: str | None) -> None:
         if text is not None:
             soup = bs.BeautifulSoup(text, "lxml")
             tbl = soup.find("table", attrs={"class", "erfassung"})
@@ -435,7 +435,7 @@ class ApiLandwehrService:
                 for tr in tbl_body.find_all("tr", recursive=False):
                     val = {}
                     for i, td in enumerate(tr.find_all("td", recursive=False)):
-                        attrs: List[str] = td.get_attribute_list("class")
+                        attrs: list[str] = td.get_attribute_list("class")
                         if i == 0:
                             val["tag"] = td.find("span").text
                         elif "datum" in attrs:

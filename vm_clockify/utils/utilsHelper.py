@@ -35,10 +35,10 @@ pass_context = click.make_pass_decorator(Context, ensure=True)
 
 
 def create_service_folder(
-    name: Union[str, None] = None,
-    host: Union[str, None] = None,
-    split_host: Union[bool, None] = None,
-    split_project: Union[bool, None] = None,
+    name: str | None = None,
+    host: str | None = None,
+    split_host: bool | None = None,
+    split_project: bool | None = None,
 ) -> str:
     """
     creates a folder with name optional host under base path
@@ -73,9 +73,9 @@ def create_folder(path: str) -> bool:
 
 
 def create_service_path(
-    host: Union[str, None] = None,
-    split_host: Union[bool, None] = None,
-    split_project: Union[bool, None] = None,
+    host: str | None = None,
+    split_host: bool | None = None,
+    split_project: bool | None = None,
 ) -> str:
     """
     creates a path name, will used in call by "create_service_folder"
@@ -103,7 +103,7 @@ def create_service_path(
 # ------------------------------------------------------------------------------
 
 
-def uri_validator(url: str) -> Union[str, None]:
+def uri_validator(url: str) -> str | None:
     try:
         if url.endswith("/"):
             url = url[:-1]
@@ -130,7 +130,7 @@ def url_checker(url) -> bool:
     return False
 
 
-def slugify(value: Union[str, None], allow_unicode: bool = False) -> Union[str, None]:
+def slugify(value: str | None, allow_unicode: bool = False) -> str | None:
     """
     https://github.com/django/django/blob/main/django/utils/text.py
     """

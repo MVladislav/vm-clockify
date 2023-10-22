@@ -3,7 +3,8 @@ import logging
 import pickle
 import re
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Match, Optional, Tuple, Union
+from re import Match
+from typing import Any
 from urllib.parse import parse_qs
 
 import holidays
@@ -22,13 +23,13 @@ from ..utils.utilsHelper import create_service_folder
 # ------------------------------------------------------------------------------
 class IssueTime:
     def __init__(self) -> None:
-        self.project: Optional[str] = None
-        self.task: Optional[str] = None
-        self.date: Optional[str] = None
-        self.duration: Dict[str, int] = {}
-        self.issue: List[str] = []
-        self.description: List[str] = []
-        self.issue_type: Optional[str] = None
+        self.project: str | None = None
+        self.task: str | None = None
+        self.date: str | None = None
+        self.duration: dict[str, int] = {}
+        self.issue: list[str] = []
+        self.description: list[str] = []
+        self.issue_type: str | None = None
 
 
 class ApiClockifyService:
@@ -104,7 +105,7 @@ class ApiClockifyService:
         for work in parsed:
             if not isinstance(work, dict):
                 continue
-            timeDuration: Optional[str] = (
+            timeDuration: str | None = (
                 work.get("timeInterval", {}).get("duration", None) if work.get("timeInterval") is not None else None
             )
 
@@ -160,18 +161,18 @@ class ApiClockifyService:
         userId: str,
         days_to_subtract: int = 0,
         page_size: int = 50,
-        specific_day: Optional[str] = None,
-        project_name: Optional[str] = None,
-        task_name: Optional[str] = None,
+        specific_day: str | None = None,
+        project_name: str | None = None,
+        task_name: str | None = None,
         combine: bool = False,
         buffer: bool = False,
         time_details: bool = False,
         time_count: bool = True,
-    ) -> Optional[Dict[str, IssueTime]]:
+    ) -> dict[str, IssueTime] | None:
         try:
-            tmp_day: Optional[datetime] = datetime.now()
-            start_day: Optional[str] = None
-            end_day: Optional[str] = None
+            tmp_day: datetime | None = datetime.now()
+            start_day: str | None = None
+            end_day: str | None = None
             if tmp_day is not None:
                 tmp_day.strftime(self.format_date_date_end)
 
@@ -192,7 +193,7 @@ class ApiClockifyService:
 
             parsed = self.request_records_from_clockify(workspaceId, userId, start_day, end_day, page_size)
             if parsed is not None:
-                results: Dict[str, IssueTime] = {}
+                results: dict[str, IssueTime] = {}
 
                 # proceed the parsed api list into its needed task information
                 self.proceed_work_issues(results, parsed, combine, project_name, task_name)
@@ -264,21 +265,21 @@ class ApiClockifyService:
 
     def proceed_work_issues(
         self,
-        results: Dict[str, IssueTime],
+        results: dict[str, IssueTime],
         parsed: Any,
         combine: bool,
-        project_name: Optional[str],
-        task_name: Optional[str],
+        project_name: str | None,
+        task_name: str | None,
     ) -> None:
         for work in parsed:
             if not isinstance(work, dict):
                 continue
 
             # parse first all needed values from json
-            timeStart: Optional[str] = (
+            timeStart: str | None = (
                 work.get("timeInterval", {}).get("start", None) if work.get("timeInterval") is not None else None
             )
-            timeDuration: Optional[str] = (
+            timeDuration: str | None = (
                 work.get("timeInterval", {}).get("duration", None) if work.get("timeInterval") is not None else None
             )
             current_timeDuration = None
@@ -290,20 +291,18 @@ class ApiClockifyService:
                         "m": int(timeDuration_tmp.group(2)) if timeDuration_tmp.group(2) else 0,
                     }
 
-            current_task: Optional[str] = work.get("task", {}).get("name", None) if work.get("task") is not None else None
-            current_project: Optional[str] = (
-                work.get("project", {}).get("name", None) if work.get("project") is not None else None
-            )
+            current_task: str | None = work.get("task", {}).get("name", None) if work.get("task") is not None else None
+            current_project: str | None = work.get("project", {}).get("name", None) if work.get("project") is not None else None
 
             # if combine is true, same tasks will combine into one
             # else default will not combine tasks
-            clockify_issue_id: Optional[str] = None
+            clockify_issue_id: str | None = None
             if not combine:
                 clockify_issue_id = work.get("id", "")
 
             current_description: str = str(work.get("description"))
             # try to parse the start date into datetime object
-            current_timeStart: Optional[datetime] = datetime.strptime(timeStart, self.format_date_from) if timeStart else None
+            current_timeStart: datetime | None = datetime.strptime(timeStart, self.format_date_from) if timeStart else None
 
             # filter
             if current_project is not None and project_name is not None and project_name not in current_project:
@@ -376,9 +375,9 @@ class ApiClockifyService:
 
     def calc_buffer_issue(
         self,
-        task_name: Optional[str],
-        project_name: Optional[str],
-        results: Dict[str, IssueTime],
+        task_name: str | None,
+        project_name: str | None,
+        results: dict[str, IssueTime],
     ) -> None:
         if (
             (task_name is not None or project_name is not None)  # TODO: check why this was checked
@@ -402,7 +401,7 @@ class ApiClockifyService:
 
             # calc into correct format
             new_hour, new_minutes = self.convert_time_split(opened_rest_time * 60.0 * 60.0)
-            current_timeDuration: Dict[str, int] = {"h": new_hour, "m": new_minutes}
+            current_timeDuration: dict[str, int] = {"h": new_hour, "m": new_minutes}
             # add to issues
             self.gen_issue(
                 results,
@@ -415,7 +414,7 @@ class ApiClockifyService:
                 current_description=settings.WORK_TIME_DEFAULT_COMMENT,
             )
 
-    def print_result(self, results: Dict[str, IssueTime], time_details: bool, time_count: bool):
+    def print_result(self, results: dict[str, IssueTime], time_details: bool, time_count: bool):
         for key, value in results.items():
             # print a overview for the complete day work
             if key.startswith(self.prefix_sum) and time_count:
@@ -476,15 +475,15 @@ class ApiClockifyService:
 
     def gen_issue(
         self,
-        results: Dict[str, IssueTime],
+        results: dict[str, IssueTime],
         current_id: str,
         current_task: str,
         current_project: str,
         current_day: str,
-        current_timeDuration: Optional[Dict[str, int]],
-        current_issue: Optional[str] = None,
-        current_issue_type: Optional[str] = None,
-        current_description: Optional[Union[str, List[Any], None]] = None,
+        current_timeDuration: dict[str, int] | None,
+        current_issue: str | None = None,
+        current_issue_type: str | None = None,
+        current_description: str | list[Any] | None | None = None,
     ) -> None:
         # START:: insert or update time per day
         # get the issue by ID or create new one into result list
@@ -498,7 +497,7 @@ class ApiClockifyService:
 
         # calc and set the work-time
         if current_timeDuration is not None:
-            duration: Dict[str, int] = results[current_id].duration
+            duration: dict[str, int] = results[current_id].duration
             duration["h"] = duration.get("h", 0) + current_timeDuration.get("h", 0)
             duration["m"] = duration.get("m", 0) + current_timeDuration.get("m", 0)
             if duration["m"] >= 60:
@@ -529,7 +528,7 @@ class ApiClockifyService:
         elif isinstance(current_description, list):
             results[current_id].description.extend(current_description)
 
-    def convert_time_split(self, seconds: float) -> Tuple[int, int]:
+    def convert_time_split(self, seconds: float) -> tuple[int, int]:
         seconds = seconds % (24.0 * 3600.0)
         hour = seconds // 3600.0
         seconds %= 3600.0
@@ -538,14 +537,14 @@ class ApiClockifyService:
         return (int(hour), int(minutes))
 
     def parse_issue_extra_info(
-        self, current_task: Optional[str], current_project: Optional[str]
+        self, current_task: str | None, current_project: str | None
     ) -> tuple[Any | None, Any | None] | tuple[None, None]:
         regex_issue = r"(?:(?:.*?)\[(.*?)\](?:.*?))+$"
 
         # SETUP:: parse issue number from task or project
         # need to be format: 'example name [i=issue-id]'
         # or                 'example name [i=issue-...]'
-        current_issue: Union[str, Match[Any], None] = None
+        current_issue: str | Match[Any] | None = None
         if current_task is not None:
             current_issue = re.match(regex_issue, current_task)
             if isinstance(current_issue, Match):
@@ -563,7 +562,7 @@ class ApiClockifyService:
             )
 
         if isinstance(current_issue, str):
-            parsed_result: Dict[Any, Any] = parse_qs(current_issue)
+            parsed_result: dict[Any, Any] = parse_qs(current_issue)
 
             # get issue ID
             parsed_result_id = parsed_result.get("i")

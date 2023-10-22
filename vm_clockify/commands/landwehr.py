@@ -40,7 +40,7 @@ def upload(ctx: Context, year: int, month: int, day: int, auftrag: str):
         service: ApiLandwehrService = ctx.service
         service.upload(year=year, month=month, day=day, auftrag=auftrag)
     except KeyboardInterrupt as k:
-        logging.log(logging.DEBUG, f"process interupted! ({k})")
+        logging.log(logging.DEBUG, f"process interrupted! ({k})")
         sys.exit(5)
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)

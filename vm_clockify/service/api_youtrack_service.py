@@ -1,7 +1,6 @@
 import json
 import logging
 from datetime import datetime
-from typing import Dict, Optional
 from xmlrpc.client import Boolean
 
 import httpx
@@ -32,7 +31,7 @@ class ApiYoutrackService:
     # --------------------------------------------------------------------------
     # https://www.jetbrains.com/help/youtrack/devportal/resource-api-issues-issueID-timeTracking-workItems.html#create-IssueWorkItem-method-sample
 
-    def upload(self, issues: Dict[str, IssueTime]) -> None:
+    def upload(self, issues: dict[str, IssueTime]) -> None:
         try:
             format_date_day: str = "%Y-%m-%d"
             headers = {
@@ -132,7 +131,7 @@ class ApiYoutrackService:
             pass
         return False
 
-    def get_worktype_id(self, session: httpx.Client, headers, issue_id: str, issue_type: str) -> Optional[str]:
+    def get_worktype_id(self, session: httpx.Client, headers, issue_id: str, issue_type: str) -> str | None:
         try:
             projectID = self.get_project_id(session, headers, issue_id)
             if projectID:
@@ -149,7 +148,7 @@ class ApiYoutrackService:
             logging.log(logging.CRITICAL, e, exc_info=True)
         return None
 
-    def get_project_id(self, session: httpx.Client, headers, issue_id: str) -> Optional[str]:
+    def get_project_id(self, session: httpx.Client, headers, issue_id: str) -> str | None:
         try:
             if issue_id:
                 fields = "id,name"

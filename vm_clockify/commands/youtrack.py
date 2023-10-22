@@ -2,7 +2,6 @@ import logging
 import os
 import pickle
 import sys
-from typing import Dict
 
 import click
 
@@ -62,7 +61,7 @@ def upload(ctx: Context):
     """
     try:
         service: ApiYoutrackService = ctx.service
-        issues: Dict[str, IssueTime] = {}
+        issues: dict[str, IssueTime] = {}
         with open(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}", "rb") as f:
             issues = pickle.load(f)
         service.upload(issues=issues)
