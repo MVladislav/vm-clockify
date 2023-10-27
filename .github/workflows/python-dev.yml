@@ -80,5 +80,5 @@ jobs:
 
       - name: install final result
         run: |
-          cd artifacts
+          cd artifacts/vm_clockify-*
           pip3 install .
