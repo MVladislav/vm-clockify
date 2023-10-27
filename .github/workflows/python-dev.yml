@@ -80,6 +80,4 @@ jobs:
 
       - name: install final result
         run: |
-          ls -la
-          cd artifacts/${{ env.PROJECT_NAME }}-*
           python3 -m pip install .
