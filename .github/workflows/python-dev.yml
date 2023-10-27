@@ -71,13 +71,17 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.PROJECT_NAME }}
-          path: path/to/artifacts
+          path: artifacts
 
       - name: un-tar final result
-        run: tar xvf ${{ env.PROJECT_NAME }}*.tar.gz
-        working-directory: path/to/artifacts
+        run: |
+          ls -la
+          tar xvf ${{ env.PROJECT_NAME }}.tar.gz
+        working-directory: artifacts
 
       - name: install final result
         run: |
-          cd path/to/artifacts
+          ls -la
+          cd artifacts
+          ls -la
           pip3 install .
