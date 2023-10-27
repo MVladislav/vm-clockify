@@ -75,13 +75,10 @@ jobs:
 
       - name: un-tar final result
         run: |
-          ls -la
-          tar xvf ${{ env.PROJECT_NAME }}.tar.gz
+          tar xvf vm_clockify-*.tar.gz
         working-directory: artifacts
 
       - name: install final result
         run: |
-          ls -la
           cd artifacts
-          ls -la
           pip3 install .
