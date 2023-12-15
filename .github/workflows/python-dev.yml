@@ -68,7 +68,7 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON }}
 
       - name: Download artifact from build step
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.PROJECT_NAME }}
           path: artifacts
