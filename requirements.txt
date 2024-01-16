@@ -1,7 +1,7 @@
 bs4==0.0.1
 click==8.1.7
 coloredlogs==15.0.1
-holidays==0.35
+holidays==0.41
 httpx==1.0.0b0
 pydantic==2.4.2
 pydantic-settings==2.0.3
