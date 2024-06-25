@@ -12,3 +12,4 @@ starlette==0.31.1
 string-color==1.2.3
 types-pytz==2023.3.1.1
 verboselogs==1.7
+anyio>=4.4.0 # not directly required, pinned by Snyk to avoid a vulnerability
