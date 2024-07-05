@@ -18,13 +18,9 @@ class LogHelper:
                           {%(lineno)-6d: (%(funcName)-30s)} %(levelname)-7s - %(message)s"
         elif logging_verbose >= 3:
             log_format = "[%(filename)-18s/%(module)-15s - %(lineno)-6d: (%(funcName)-30s)]:: %(levelname)-7s - %(message)s"
-        elif logging_verbose >= 2:
+        elif logging_verbose >= 2 or logging_verbose >= 1:
             log_format = "%(levelname)-7s - %(message)s"
-        elif logging_verbose >= 1:
-            log_format = "%(levelname)-7s - %(message)s"
-        elif logging_verbose >= 0:
-            log_format = "%(message)s"
-        elif logging_verbose < 0:
+        elif logging_verbose >= 0 or logging_verbose < 0:
             log_format = "%(message)s"
         else:
             log_format = "%(message)s"

@@ -1,6 +1,6 @@
+from datetime import datetime, timedelta
 import json
 import logging
-from datetime import datetime, timedelta
 from typing import Any
 
 import bs4 as bs
@@ -57,7 +57,6 @@ class ApiLandwehrService:
                     and self.PRADO_PAGESTATE is not None
                     and self.SSID is not None
                 ):
-                    pass
                     # ----------------------------------------------------------
                     # GET TIME
                     self.get_time(session, year, month)
@@ -446,7 +445,7 @@ class ApiLandwehrService:
                         elif "pause" in attrs:
                             val["pause_start"] = td.find("input", attrs={"class": "von"}).get("value")
                             val["pause_end"] = td.find("input", attrs={"class": "bis"}).get("value")
-                    if val.get("date", None) is not None and val.get("work_start", None) is not None:
+                    if val.get("date") is not None and val.get("work_start") is not None:
                         table_data[val.get("date")] = val
 
                 self.always_worked = table_data

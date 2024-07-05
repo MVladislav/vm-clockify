@@ -1,12 +1,303 @@
+[build-system]
+requires = ["setuptools>=69.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vm_clockify"
+description = "clockify api usage to upload into youtrack"
+keywords = []
+
+version = "0.1.0"
+requires-python = ">=3.12.0"
+readme = "README.md"
+license = { text = "MIT" }
+
+authors = [{ name = "MVladislav" }]
+
+dependencies = [
+  "setuptools>=69.0.3",
+  "bs4==0.0.1",
+  "click==8.1.7",
+  "coloredlogs==15.0.1",
+  "holidays==0.35",
+  "httpx==1.0.0b0",
+  "pydantic==2.4.2",
+  "pydantic-settings==2.0.3",
+  "pytz==2023.3.post1",
+  "starlette==0.37.1",
+  "string-color==1.2.3",
+  "types-pytz==2023.3.1.1",
+  "verboselogs==1.7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.7.0",
+  "pre-commit==3.5.0",
+  "pylint==3.0.2",
+  "pytest-aiofiles==0.2.0",
+  "pytest-aiohttp==1.0.5",
+  "pytest-asyncio==0.23.5",
+  "pytest-cov==4.1.0",
+  "pytest-env==1.1.1",
+  "pytest-timeout==2.2.0",
+  "pytest==7.4.3",
+  "ruff>=0.1.6",
+  "testfixtures==7.2.2",
+  "types-aiofiles==23.2.0.0",
+  "types-cachetools==5.3.0.7",
+  "types-setuptools>=69.0.0.20240125 ",
+]
+
+[project.scripts]
+vm-clockify = "vm_clockify.main:cli"
+
+# ----------------------------------- BLACK -----------------------------------
 [tool.black]
-target-version = ['py311']
-safe = true
+target-version = ['py312']
+# safe = true
 line-length = 130
 
-[tool.flake8]
-max-line-length = 130
+# ____________________________________ RUFF ____________________________________
+# https://docs.astral.sh/ruff/settings/
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+fix = true
 
-[tool.isort]
-py_version = 311
-line_length = 130
-profile = "black"
+lint.select = [
+  "ASYNC",   # https://docs.astral.sh/ruff/rules/#flake8-async
+  "B",       # https://docs.astral.sh/ruff/rules/#flake8-bugbear
+  "C",       # complexity
+  "C4",      # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+  "COM818",  # Trailing comma on bare tuple prohibited
+  "D",       # docstrings
+  "DTZ003",  # Use datetime.now(tz=) instead of datetime.utcnow()
+  "DTZ004",  # Use datetime.fromtimestamp(ts, tz=) instead of datetime.utcfromtimestamp(ts)
+  "E",       # pycodestyle
+  "F",       # pyflakes/autoflake
+  "G",       # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
+  "I",       # isort
+  "ICN001",  # import concentions; {name} should be imported as {asname}
+  "ISC",     # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
+  "N",       # pep8-naming
+  "S307",    # No builtin eval() allowed
+  "PGH004",  # Use specific rule codes when using noqa
+  "PIE",     # https://docs.astral.sh/ruff/rules/#flake8-pie-pie
+  "PLC",     # pylint
+  "PLC0414", # Useless import alias. Import alias does not rename original package.
+  "PLE",     # pylint
+  "PLR",     # pylint
+  "PLW",     # pylint
+  "PT",      # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
+  "PYI",     # https://docs.astral.sh/ruff/rules/#flake8-pyi-pyi
+  "Q",       # https://docs.astral.sh/ruff/rules/#flake8-quotes-q
+  "RET",     # https://docs.astral.sh/ruff/rules/#flake8-return-ret
+  "RSE",     # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
+  "RUF006",  # Store a reference to the return value of asyncio.create_task
+  "S",       # flake8-bandit
+  "SIM",     # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
+  "SLF",     # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+  "SLOT",    # https://docs.astral.sh/ruff/rules/#flake8-slots-slot
+  "T100",    # Trace found: {name} used
+  "T20",     # https://docs.astral.sh/ruff/rules/#flake8-print-t20
+  "TID",     # https://docs.astral.sh/ruff/rules/#flake8-tidy-imports-tid
+  "TRY004",  # Prefer TypeError exception for invalid type
+  "B904",    # Use raise from to specify exception cause
+  "TRY302",  # Remove exception handler; error is immediately re-raised
+  "UP",      # pyupgrade
+  "W",       # pycodestyle
+]
+
+lint.ignore = [
+  "G004",    # Logging statement uses f-string
+  "PLR2004", # Magic value used in comparison, consider replacing 5 with a constant variable
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "D100",   # Missing docstring in public module
+  "D103",   # Missing docstring in public function
+  "D104",   # Missing docstring in public package
+  "N802",   # Function name {name} should be lowercase
+  "N806",   # Variable `userId` in function should be lowercase
+  "N816",   # Variable {name} in global scope should not be mixedCase
+  "S101",   # Use of assert detected
+  "S106",   # Possible hardcoded password assigned to argument: "password_file"
+  "SLF001", # Private member accessed: {access}
+]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+case-sensitive = true
+extra-standard-library = ["typing_extensions"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.ruff.lint.pylint]
+max-args = 12
+max-branches = 25
+max-statements = 70
+max-returns = 10
+
+# ----------------------------------- BANDIT -----------------------------------
+[tool.bandit]
+tests = [
+  "B103",
+  "B108",
+  "B306",
+  "B307",
+  "B313",
+  "B314",
+  "B315",
+  "B316",
+  "B317",
+  "B318",
+  "B319",
+  "B320",
+  # "B325",
+  "B601",
+  "B602",
+  "B604",
+  "B608",
+  "B609",
+]
+
+# ----------------------------------- PYTEST -----------------------------------
+[tool.pytest.ini_options]
+addopts = ["--cov=./", "--cov-report=xml"]
+testpaths = ["tests"]
+
+env = [
+  "D:BUMPER_CA=tests/_test_files/certs/ca.crt",
+  "D:BUMPER_CERT=tests/_test_files/certs/bumper.crt",
+  "D:BUMPER_KEY=tests/_test_files/certs/bumper.key",
+  "WEB_SERVER_HTTPS_PORT=8443",
+  "DB_FILE=tests/_test_files/tmp.db",
+]
+
+asyncio_mode = "auto"
+timeout = 10
+# log_cli = true
+# log_level = "INFO"
+
+# ------------------------------------ MYPY ------------------------------------
+[tool.mypy]
+follow_imports = "silent"
+python_version = "3.12"
+show_error_codes = true
+ignore_missing_imports = true
+strict_equality = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unreachable = true
+strict = true
+
+# ----------------------------------- PYLINT -----------------------------------
+[tool.pylint.MAIN]
+py-version = "3.12"
+ignore = ["tests"]
+jobs = 2
+
+# Return non-zero exit code if any of these messages/categories are detected,
+# even if score is above --fail-under value. Syntax same as enable. Messages
+# specified are enabled, while categories only check already-enabled messages.
+fail-on = ["useless-suppression"]
+
+# Specify a score threshold under which the program will exit with error.
+fail-under = 10
+
+# Pickle collected data for later comparisons.
+persistent = true
+
+# A comma-separated list of package or module names from where C extensions may
+# be loaded. Extensions are loading into the active Python interpreter and may
+# run arbitrary code. (This is an alternative name to extension-pkg-allow-list
+# for backward compatibility.)
+extension-pkg-whitelist = ["ciso8601", "cv2"]
+
+[tool.pylint.BASIC]
+# Good variable names which should always be accepted, separated by a comma.
+good-names = ["i", "j", "k", "e", "ex", "f", "_", "T", "x", "y", "id", "tg"]
+
+[tool.pylint."MESSAGES CONTROL"]
+# Reasons disabled:
+# format - handled by black
+# duplicate-code - unavoidable
+# cyclic-import - doesn't test if both import on load
+# too-many-* - are not enforced for the sake of readability
+# abstract-method - with intro of async there are always methods missing
+# inconsistent-return-statements - doesn't handle raise
+# wrong-import-order - isort guards this
+disable = [
+  "fixme",
+  #"cyclic-import",
+  #"inconsistent-return-statements",
+  #"wrong-import-order",
+  "format",
+  "abstract-method",
+  "duplicate-code",
+  "too-few-public-methods",
+  "logging-fstring-interpolation",
+  "singleton-comparison",
+  "global-statement",
+  "global-variable-not-assigned",
+  "too-many-arguments",
+  "too-many-branches",
+  "too-many-instance-attributes",
+  "too-many-locals",
+  "too-many-nested-blocks",
+  "too-many-statements",
+  "broad-exception-caught",
+  "broad-exception-raised",
+]
+# enable useless-suppression temporarily every now and then to clean them up
+enable = [
+  "useless-suppression",
+  "use-symbolic-message-instead",
+  "c-extension-no-member",
+]
+
+[tool.pylint.REPORTS]
+# Activate the evaluation score.
+score = false
+
+[tool.pylint.FORMAT]
+expected-line-ending-format = "LF"
+
+[tool.pylint.EXCEPTIONS]
+# Exceptions that will emit a warning when caught.
+# Defaults to "BaseException, Exception".
+overgeneral-exceptions = ["builtins.BaseException", "builtins.Exception"]
+
+[tool.pylint.REFACTORING]
+# Maximum number of nested blocks for function / method body
+max-nested-blocks = 5
+
+# Complete name of functions that never returns. When checking for inconsistent-
+# return-statements if a never returning function is called then it will be
+# considered as an explicit return statement and no message will be printed.
+never-returning-functions = ["sys.exit", "argparse.parse_error"]
+
+[tool.pylint.DESIGN]
+max-parents = 10
+max-args = 6
+max-returns = 7

@@ -35,9 +35,7 @@ from ..utils.utilsHelper import Context, create_service_folder, pass_context, ur
 )
 @pass_context
 def cli(ctx: Context, key: str, endpoint: str):
-    """
-    This is youtrack-api usage command
-    """
+    """This is youtrack-api usage command"""
     if uri_validator(endpoint):
         settings.YOUTRACK_API_KEY = key
         settings.YOUTRACK_API_ENDPOINT = endpoint
@@ -55,8 +53,7 @@ def cli(ctx: Context, key: str, endpoint: str):
 @cli.command()
 @pass_context
 def upload(ctx: Context):
-    """
-    This api will insert times collected from clockify into youtrack
+    """This api will insert times collected from clockify into youtrack
     HINT: run clockify times api first, else there are no records to be uploaded
     """
     try:

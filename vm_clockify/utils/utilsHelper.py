@@ -1,10 +1,10 @@
 import logging
 import os
+from pathlib import Path
 import re
 import sys
+from typing import Any
 import unicodedata
-from pathlib import Path
-from typing import Any, Union
 from urllib.parse import urlparse
 
 import click
@@ -40,9 +40,7 @@ def create_service_folder(
     split_host: bool | None = None,
     split_project: bool | None = None,
 ) -> str:
-    """
-    creates a folder with name optional host under base path
-    """
+    """Creates a folder with name optional host under base path"""
     try:
         path = create_service_path(host=host, split_host=split_host, split_project=split_project)
         path = f"{path}/{name}" if name is not None else path
@@ -60,9 +58,7 @@ def create_service_folder(
 
 
 def create_folder(path: str) -> bool:
-    """
-    create a folder under giving path
-    """
+    """Create a folder under giving path"""
     try:
         Path(path).mkdir(parents=True, exist_ok=True, mode=0o700)
         return True
@@ -77,9 +73,7 @@ def create_service_path(
     split_host: bool | None = None,
     split_project: bool | None = None,
 ) -> str:
-    """
-    creates a path name, will used in call by "create_service_folder"
-    """
+    """Creates a path name, will used in call by "create_service_folder" """
     split_host = not settings.DISABLE_SPLIT_HOST if split_host is None else split_host
     split_project = not settings.DISABLE_SPLIT_PROJECT if split_project is None else split_project
     if split_host and host is not None:
@@ -131,9 +125,7 @@ def url_checker(url) -> bool:
 
 
 def slugify(value: str | None, allow_unicode: bool = False) -> str | None:
-    """
-    https://github.com/django/django/blob/main/django/utils/text.py
-    """
+    """https://github.com/django/django/blob/main/django/utils/text.py"""
     value = str(value)
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)

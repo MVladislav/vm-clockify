@@ -1,12 +1,14 @@
+"""Clockify."""
+
 import datetime
 import logging
 import sys
 
 import click
 
-from ..service.api_clockify_service import ApiClockifyService
-from ..utils.config import settings
-from ..utils.utilsHelper import Context, pass_context, uri_validator
+from vm_clockify.service.api_clockify_service import ApiClockifyService
+from vm_clockify.utils.config import settings
+from vm_clockify.utils.utilsHelper import Context, pass_context, uri_validator
 
 
 # ------------------------------------------------------------------------------
@@ -33,9 +35,7 @@ from ..utils.utilsHelper import Context, pass_context, uri_validator
 )
 @pass_context
 def cli(ctx: Context, key: str, endpoint: str):
-    """
-    This is clockify api usage command
-    """
+    """Clockify api usage command."""
     if uri_validator(endpoint):
         settings.CLOCKIFY_API_KEY = key
         settings.CLOCKIFY_API_ENDPOINT = endpoint
@@ -53,10 +53,7 @@ def cli(ctx: Context, key: str, endpoint: str):
 @cli.command()
 @pass_context
 def user(ctx: Context):
-    """
-    This api will return some needed information from user for
-    times-api
-    """
+    """Clockify API will return some needed information from user for times-api."""
     try:
         service: ApiClockifyService = ctx.service
         service.user()
@@ -132,8 +129,8 @@ def remaining_days(
     taken_free_days=0,
     illness_days=0,
 ):
-    """
-    This api will print you remaining work-time for a specific month in a year
+    """Clockify pi will print you remaining work-time for a specific month in a year.
+
     HINT: run first user-api to get workspace ID and user ID
     """
     try:
@@ -254,8 +251,8 @@ def times(
     time_details: bool,
     time_count: bool,
 ):
-    """
-    This api will print you work-time
+    """Clockify api will print you work-time.
+
     HINT: run first user-api to get workspace ID and user ID
     """
     try:
@@ -263,8 +260,8 @@ def times(
         settings.CLOCKIFY_API_USER_ID = user_id
         service: ApiClockifyService = ctx.service
         service.times(
-            workspaceId=workspace_id,
-            userId=user_id,
+            workspace_id=workspace_id,
+            user_id=user_id,
             days_to_subtract=days_to_subtract,
             page_size=page_size,
             specific_day=specific_day,

@@ -124,8 +124,7 @@ def cli(
     disable_split_project: bool,
     disable_split_host: bool,
 ):
-    """
-    Welcome to {PROJECT_NAME}
+    """Welcome to {PROJECT_NAME}
 
     Example: "{PROJECT_NAME} -vv -p 'nice project' -dsh --home . <COMMAND> [OPTIONS] <COMMAND> [OPTIONS]"
     """

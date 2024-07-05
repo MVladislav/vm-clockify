@@ -1,8 +1,8 @@
 import logging
 
-import verboselogs
 from starlette.config import Config
 from stringcolor.ops import Bold
+import verboselogs
 
 
 class Settings:
@@ -79,7 +79,7 @@ class Settings:
     # --------------------------------------------------------------------------
 
     def print(self) -> None:
-        if self.LOGGING_LEVEL == logging.getLevelName(logging.DEBUG):
+        if logging.getLevelName(logging.DEBUG) == self.LOGGING_LEVEL:
             print()
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             logging.log(

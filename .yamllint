@@ -1,3 +1,6 @@
+---
+extends: default
+
 yaml-files:
   - "*.yaml"
   - "*.yml"
@@ -15,7 +18,7 @@ rules:
   brackets:
     level: error
     min-spaces-inside: 0
-    max-spaces-inside: 0
+    max-spaces-inside: 1
     min-spaces-inside-empty: -1
     max-spaces-inside-empty: -1
   colons:
@@ -30,15 +33,14 @@ rules:
   comments:
     level: error
     require-starting-space: true
-    min-spaces-from-content: 2
-  comments-indentation:
-    level: error
+    min-spaces-from-content: 1
+  comments-indentation: false
   document-end:
     level: error
     present: false
   document-start:
-    level: error
-    present: false
+    level: warning
+    present: true
   empty-lines:
     level: error
     max: 1
@@ -50,7 +52,7 @@ rules:
   indentation:
     level: error
     spaces: 2
-    indent-sequences: true
+    indent-sequences: consistent
     check-multi-line-strings: false
   key-duplicates:
     level: error
@@ -63,3 +65,6 @@ rules:
   trailing-spaces:
     level: error
   truthy: disable
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
