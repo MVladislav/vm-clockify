@@ -215,6 +215,7 @@ class ApiClockifyService:
             # if a speicif day should be used as start day, parse it from param
             if specific_day is not None:
                 tmp_day = datetime.strptime(specific_day, self.format_date_day)
+                end_day = tmp_day.strftime(self.format_date_date_end)
             # calculate start day
             start_day = (tmp_day - timedelta(days=days_to_subtract)).strftime(self.format_date_date_start)
 
