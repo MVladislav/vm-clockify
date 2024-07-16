@@ -6,7 +6,7 @@ httpx==1.0.0b0
 pydantic==2.4.2
 pydantic-settings==2.0.3
 pytz==2023.3.post1
-setuptools==68.2.2
+setuptools==70.0.0
 
 starlette==0.31.1
 string-color==1.2.3
