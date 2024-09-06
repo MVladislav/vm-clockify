@@ -138,8 +138,8 @@ def remaining_days(
         settings.CLOCKIFY_API_USER_ID = user_id
         service: ApiClockifyService = ctx.service
         service.remaining_monthly_work_time(
-            workspaceId=workspace_id,
-            userId=user_id,
+            workspace_id=workspace_id,
+            user_id=user_id,
             year=year,
             month=month,
             taken_free_days=taken_free_days,

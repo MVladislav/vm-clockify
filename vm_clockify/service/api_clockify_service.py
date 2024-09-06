@@ -353,7 +353,9 @@ class ApiClockifyService:
             current_day: str = current_time_start.strftime(self.format_date_day)
 
             # get needed info like the id from issue
-            current_issue, current_issue_type = self._parse_issue_extra_info(current_task, current_project)
+            current_issue, current_issue_type, current_description = self._parse_issue_extra_info(
+                current_task, current_project, current_description
+            )
 
             if current_issue is None:
                 logging.log(
@@ -372,9 +374,9 @@ class ApiClockifyService:
                 )
                 continue
 
-            if current_task is None:
-                logging.log(logging.ERROR, "there is no 'task name' specified")
-                sys.exit(1)
+            # if current_task is None:
+            #     logging.log(logging.ERROR, "there is no 'task name' specified")
+            #     sys.exit(1)
 
             if current_project is None:
                 logging.log(logging.ERROR, "there is no 'project name' name specified")
@@ -562,23 +564,30 @@ class ApiClockifyService:
         return (int(hour), int(minutes))
 
     def _parse_issue_extra_info(
-        self, current_task: str | None, current_project: str | None
-    ) -> tuple[Any | None, Any | None] | tuple[None, None]:
+        self, current_task: str | None, current_project: str | None, current_description: str | None
+    ) -> tuple[Any | None, Any | None, Any | None]:
         regex_issue = r"(?:(?:.*?)\[(.*?)\](?:.*?))+$"
 
         # SETUP:: parse issue number from task or project
         # need to be format: 'example name [i=issue-id]'
         # or                 'example name [i=issue-...]'
-        current_issue: str | Match[Any] | None = None
-        if current_task is not None:
-            current_issue = re.match(regex_issue, current_task)
-            if isinstance(current_issue, Match):
-                current_issue = current_issue.group(1)
+        current_issue: str | None = None
+        if current_description is not None:
+            current_issue_tmp = re.match(regex_issue, current_description)
+            if isinstance(current_issue_tmp, Match):
+                current_issue = current_issue_tmp.group(1)
+                # current_description = current_description
+                current_description = re.sub(r"\[.*?\]$", "", current_description).strip()
 
-        if current_project is not None and current_issue is None:
-            current_issue = re.match(regex_issue, current_project)
-            if isinstance(current_issue, Match):
-                current_issue = current_issue.group(1)
+        if current_task is not None:
+            current_issue_tmp = re.match(regex_issue, current_task)
+            if isinstance(current_issue_tmp, Match):
+                current_issue = current_issue_tmp.group(1)
+
+        if current_project is not None:
+            current_issue_tmp = re.match(regex_issue, current_project)
+            if isinstance(current_issue_tmp, Match):
+                current_issue = current_issue_tmp.group(1)
 
         if current_issue is None:
             logging.log(
@@ -599,6 +608,6 @@ class ApiClockifyService:
             if parsed_result_type:
                 parsed_result_type = parsed_result_type[0]
 
-            return parsed_result_id, parsed_result_type
+            return parsed_result_id, parsed_result_type, current_description
 
-        return None, None
+        return None, None, None
