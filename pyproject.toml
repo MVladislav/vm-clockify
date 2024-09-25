@@ -23,7 +23,7 @@ dependencies = [
   "httpx==1.0.0b0",
   "pydantic==2.4.2",
   "pydantic-settings==2.0.3",
-  "pytz==2023.3.post1",
+  "pytz==2024.2",
   "starlette==0.37.1",
   "string-color==1.2.3",
   "types-pytz==2023.3.1.1",
