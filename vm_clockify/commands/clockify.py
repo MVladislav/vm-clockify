@@ -8,7 +8,7 @@ import click
 
 from vm_clockify.service.api_clockify_service import ApiClockifyService
 from vm_clockify.utils.config import settings
-from vm_clockify.utils.utilsHelper import Context, pass_context, uri_validator
+from vm_clockify.utils.utils_helper import Context, pass_context, uri_validator
 
 
 # ------------------------------------------------------------------------------

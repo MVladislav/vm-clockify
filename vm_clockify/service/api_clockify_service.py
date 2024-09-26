@@ -1,4 +1,4 @@
-"""CLOKIFY."""
+"""CLOCKIFY."""
 
 from datetime import date, datetime, timedelta
 import json
@@ -16,7 +16,7 @@ from httpx._types import HeaderTypes, QueryParamTypes
 import verboselogs
 
 from vm_clockify.utils.config import settings
-from vm_clockify.utils.utilsHelper import create_service_folder
+from vm_clockify.utils.utils_helper import create_service_folder
 
 
 # ------------------------------------------------------------------------------

@@ -1,3 +1,5 @@
+"""SETTINGS."""
+
 import logging
 
 from starlette.config import Config
@@ -6,6 +8,8 @@ import verboselogs
 
 
 class Settings:
+    """SETTINGS."""
+
     # --------------------------------------------------------------------------
     #
     #
@@ -79,9 +83,10 @@ class Settings:
     # --------------------------------------------------------------------------
 
     def print(self) -> None:
+        """Print DEBUG info."""
         if logging.getLevelName(logging.DEBUG) == self.LOGGING_LEVEL:
-            print()
-            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print()  # noqa: T201
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")  # noqa: T201
             logging.log(
                 verboselogs.VERBOSE,
                 f"PROJECT_NAME           : {Bold(self.PROJECT_NAME)}",
@@ -107,8 +112,8 @@ class Settings:
             #     verboselogs.VERBOSE,
             #     f'PROJECT-PATH           : {Bold(create_service_path(None))}{Bold("/")}',
             # )
-            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            print()
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")  # noqa: T201
+            print()  # noqa: T201
 
 
 settings = Settings()

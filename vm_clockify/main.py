@@ -1,10 +1,12 @@
+"""MAIN."""
+
 import logging
 import os
 
 import click
 
 from .utils.config import settings
-from .utils.logHelper import LogHelper
+from .utils.log_helper import LogHelper
 
 # ------------------------------------------------------------------------------
 #
@@ -13,20 +15,20 @@ from .utils.logHelper import LogHelper
 # ------------------------------------------------------------------------------
 # Program Header
 # Basic user interface header
-print(
+print(  # noqa: T201
     r"""    __  ____    ____          ___      __
    /  |/  / |  / / /___ _____/ (_)____/ /___ __   __
   / /|_/ /| | / / / __ `/ __  / / ___/ / __ `/ | / /
  / /  / / | |/ / / /_/ / /_/ / (__  ) / /_/ /| |/ /
 /_/  /_/  |___/_/\__,_/\__,_/_/____/_/\__,_/ |___/"""
 )
-print("**************** 4D 56 6C 61 64 69 73 6C 61 76 *****************")
-print("****************************************************************")
-print("* Copyright of MVladislav, 2021                                *")
-print("* https://mvladislav.online                                    *")
-print("* https://github.com/MVladislav                                *")
-print("****************************************************************")
-print()
+print("**************** 4D 56 6C 61 64 69 73 6C 61 76 *****************")  # noqa: T201
+print("****************************************************************")  # noqa: T201
+print("* Copyright of MVladislav, 2024                                *")  # noqa: T201
+print("* https://mvladislav.online                                    *")  # noqa: T201
+print("* https://github.com/MVladislav                                *")  # noqa: T201
+print("****************************************************************")  # noqa: T201
+print()  # noqa: T201
 
 
 # ------------------------------------------------------------------------------
@@ -35,7 +37,10 @@ print()
 #
 # ------------------------------------------------------------------------------
 class ComplexCLI(click.MultiCommand):
+    """ComplexCLI."""
+
     def list_commands(self, ctx):
+        """ComplexCLI."""
         rv = []
         for filename in os.listdir(os.path.join(os.path.dirname(__file__), "./commands")):
             if filename.endswith(".py") and not filename.startswith("__"):
@@ -44,12 +49,14 @@ class ComplexCLI(click.MultiCommand):
         return rv
 
     def get_command(self, ctx, name):
+        """ComplexCLI."""
         try:
             mod = __import__(f"vm_clockify.commands.{name}", None, None, ["cli"])
             return mod.cli
 
         except ImportError as e:
             logging.log(logging.CRITICAL, e)
+        return None
 
 
 # ------------------------------------------------------------------------------
@@ -57,11 +64,11 @@ class ComplexCLI(click.MultiCommand):
 #
 #
 # ------------------------------------------------------------------------------
-CONTEXT_SETTINGS = dict(
-    help_option_names=["-h", "--help"],
-    ignore_unknown_options=True,
-    auto_envvar_prefix="COMPLEX",
-)
+CONTEXT_SETTINGS = {
+    "help_option_names": ["-h", "--help"],
+    "ignore_unknown_options": True,
+    "auto_envvar_prefix": "COMPLEX",
+}
 
 
 @click.command(cls=ComplexCLI, context_settings=CONTEXT_SETTINGS)
@@ -124,7 +131,7 @@ def cli(
     disable_split_project: bool,
     disable_split_host: bool,
 ):
-    """Welcome to {PROJECT_NAME}
+    """Welcome to {PROJECT_NAME}.
 
     Example: "{PROJECT_NAME} -vv -p 'nice project' -dsh --home . <COMMAND> [OPTIONS] <COMMAND> [OPTIONS]"
     """

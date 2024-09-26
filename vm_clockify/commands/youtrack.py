@@ -1,3 +1,5 @@
+"""YOUTRACK."""
+
 import logging
 import os
 import pickle
@@ -5,10 +7,10 @@ import sys
 
 import click
 
-from ..service.api_clockify_service import IssueTime
-from ..service.api_youtrack_service import ApiYoutrackService
-from ..utils.config import settings
-from ..utils.utilsHelper import Context, create_service_folder, pass_context, uri_validator
+from vm_clockify.service.api_clockify_service import IssueTime
+from vm_clockify.service.api_youtrack_service import ApiYoutrackService
+from vm_clockify.utils.config import settings
+from vm_clockify.utils.utils_helper import Context, create_service_folder, pass_context, uri_validator
 
 
 # ------------------------------------------------------------------------------
@@ -35,7 +37,7 @@ from ..utils.utilsHelper import Context, create_service_folder, pass_context, ur
 )
 @pass_context
 def cli(ctx: Context, key: str, endpoint: str):
-    """This is youtrack-api usage command"""
+    """Youtrack-api usage command."""
     if uri_validator(endpoint):
         settings.YOUTRACK_API_KEY = key
         settings.YOUTRACK_API_ENDPOINT = endpoint
@@ -53,8 +55,9 @@ def cli(ctx: Context, key: str, endpoint: str):
 @cli.command()
 @pass_context
 def upload(ctx: Context):
-    """This api will insert times collected from clockify into youtrack
-    HINT: run clockify times api first, else there are no records to be uploaded
+    """Will insert times collected from clockify into youtrack.
+
+    HINT: run clockify times api first, else there are no records to be uploaded.
     """
     try:
         service: ApiYoutrackService = ctx.service

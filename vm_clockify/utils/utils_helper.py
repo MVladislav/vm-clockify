@@ -1,3 +1,5 @@
+"""UTILS HELPER."""
+
 import logging
 import os
 from pathlib import Path
@@ -19,7 +21,10 @@ from vm_clockify.utils.config import settings
 #
 # ------------------------------------------------------------------------------
 class Context:
+    """CONTEXT."""
+
     def __init__(self):
+        """INIT CONTEXT."""
         logging.log(logging.DEBUG, "init context...")
         self.service: Any = None
 
@@ -40,7 +45,7 @@ def create_service_folder(
     split_host: bool | None = None,
     split_project: bool | None = None,
 ) -> str:
-    """Creates a folder with name optional host under base path"""
+    """Create a folder with name optional host under base path."""
     try:
         path = create_service_path(host=host, split_host=split_host, split_project=split_project)
         path = f"{path}/{name}" if name is not None else path
@@ -50,15 +55,14 @@ def create_service_folder(
             logging.log(logging.DEBUG, f"new folder created:: {path}")
             return path
 
-        else:
-            logging.log(logging.ERROR, f'failed to create path "{path}", check permission')
+        logging.log(logging.ERROR, f'failed to create path "{path}", check permission')
     except Exception as e:
         logging.log(logging.CRITICAL, e, exc_info=True)
     sys.exit(1)
 
 
 def create_folder(path: str) -> bool:
-    """Create a folder under giving path"""
+    """Create a folder under giving path."""
     try:
         Path(path).mkdir(parents=True, exist_ok=True, mode=0o700)
         return True
@@ -73,7 +77,7 @@ def create_service_path(
     split_host: bool | None = None,
     split_project: bool | None = None,
 ) -> str:
-    """Creates a path name, will used in call by "create_service_folder" """
+    """Create a path name, will used in call by "create_service_folder"."""
     split_host = not settings.DISABLE_SPLIT_HOST if split_host is None else split_host
     split_project = not settings.DISABLE_SPLIT_PROJECT if split_project is None else split_project
     if split_host and host is not None:
@@ -81,13 +85,10 @@ def create_service_path(
         host = "" if host is None else f"/{host}"
     else:
         host = ""
-    if split_project:
-        PROJECT = "" if settings.PROJECT_NAME is None else f"/{settings.PROJECT_NAME}"
-    else:
-        PROJECT = ""
+    project = ("" if settings.PROJECT_NAME is None else f"/{settings.PROJECT_NAME}") if split_project else ""
     if settings.BASE_PATH[-1] == "/":
         settings.BASE_PATH = settings.BASE_PATH[:-1]
-    return f"{settings.BASE_PATH}{PROJECT}{host}"
+    return f"{settings.BASE_PATH}{project}{host}"
 
 
 # ------------------------------------------------------------------------------
@@ -98,6 +99,7 @@ def create_service_path(
 
 
 def uri_validator(url: str) -> str | None:
+    """No desc."""
     try:
         if url.endswith("/"):
             url = url[:-1]
@@ -111,6 +113,7 @@ def uri_validator(url: str) -> str | None:
 
 
 def url_checker(url) -> bool:
+    """No desc."""
     try:
         get = httpx.get(url, timeout=5)
         logging.log(logging.DEBUG, f"{url}: returns '{get.status_code}'")
@@ -125,6 +128,7 @@ def url_checker(url) -> bool:
 
 
 def slugify(value: str | None, allow_unicode: bool = False) -> str | None:
+    """No desc."""
     """https://github.com/django/django/blob/main/django/utils/text.py"""
     value = str(value)
     if allow_unicode:

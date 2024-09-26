@@ -1,3 +1,5 @@
+"""LANDWEHR."""
+
 from datetime import datetime, timedelta
 import json
 import logging
@@ -6,7 +8,7 @@ from typing import Any
 import bs4 as bs
 import httpx
 
-from ..utils.config import settings
+from vm_clockify.utils.config import settings
 
 
 # ------------------------------------------------------------------------------
@@ -15,12 +17,15 @@ from ..utils.config import settings
 #
 # ------------------------------------------------------------------------------
 class ApiLandwehrService:
+    """LANDWEHR."""
+
     # --------------------------------------------------------------------------
     #
     #
     #
     # --------------------------------------------------------------------------
     def __init__(self):
+        """INIT LANDWEHR."""
         logging.log(logging.DEBUG, "landwehr-api-service is initiated")
 
     # --------------------------------------------------------------------------
@@ -44,26 +49,23 @@ class ApiLandwehrService:
     # --------------------------------------------------------------------------
 
     def upload(self, year: int, month: int, day: int, auftrag: str):
+        """Upload to Landwehr."""
         try:
             with httpx.Client() as session:
                 # ------------------------------------------------------------------
                 # LOGIN
-                res: httpx.Response = self.login(session)
+                res: httpx.Response = self._login(session)
 
                 # ------------------------------------------------------------------
                 # LOGIN CHECK
-                if (
-                    (res.status_code == 200 or res.status_code == 302)
-                    and self.PRADO_PAGESTATE is not None
-                    and self.SSID is not None
-                ):
+                if (res.status_code in (200, 302)) and self.PRADO_PAGESTATE is not None and self.SSID is not None:
                     # ----------------------------------------------------------
                     # GET TIME
-                    self.get_time(session, year, month)
+                    self._get_time(session, year, month)
 
                     # ----------------------------------------------------------
                     # ADD TIME
-                    self.add_time(session, auftrag, year, month, day)
+                    self._add_time(session, auftrag, year, month, day)
 
                     # parsed = json.loads(res.text)
                     # logging.log(
@@ -84,7 +86,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def login(self, session: httpx.Client) -> httpx.Response:
+    def _login(self, session: httpx.Client) -> httpx.Response:
         logging.log(logging.INFO, "try to login...")
 
         # ----------------------------------------------------------------------
@@ -118,7 +120,7 @@ class ApiLandwehrService:
         self.SSID = response.cookies["SSID"]
         logging.log(logging.DEBUG, self.SSID)
 
-        self.get_prado_pagestate(response.text)
+        self._get_prado_pagestate(response.text)
 
         # ----------------------------------------------------------------------
         # second try to login and save login "hidden fields"
@@ -142,7 +144,10 @@ class ApiLandwehrService:
             "Sec-Fetch-Dest": "document",
             "Sec-Fetch-Mode": "navigate",
             "Sec-Fetch-Site": "same-origin",
-            "Referer": f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}",
+            "Referer": (
+                f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&"
+                f"mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}"
+            ),
             "Sec-Fetch-User": "?1",
         }
 
@@ -180,7 +185,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def get_time(self, session: httpx.Client, year: int, month: int) -> httpx.Response | None:
+    def _get_time(self, session: httpx.Client, year: int, month: int) -> httpx.Response | None:
         logging.log(logging.INFO, "try to get current times...")
 
         # ----------------------------------------------------------------------
@@ -200,7 +205,10 @@ class ApiLandwehrService:
             "Sec-Fetch-Mode": "navigate",
             "Sec-Fetch-Site": "same-origin",
             "Sec-Fetch-User": "?1",
-            "Referer": f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}",
+            "Referer": (
+                f"{settings.LANDWEHR_API_URL}{settings.LANDWEHR_API_ENDPOINT}?page=Login&login=Personal&"
+                f"mandnr={settings.LANDWEHR_MAND_NR}&theme={settings.LANDWEHR_COMPANY}"
+            ),
         }
 
         if not self.SSID:
@@ -217,7 +225,7 @@ class ApiLandwehrService:
             params=params,
             cookies=cookies,
         )
-        self.get_prado_pagestate(res.text)
+        self._get_prado_pagestate(res.text)
 
         # ----------------------------------------------------------------------
         # second try ...
@@ -261,9 +269,9 @@ class ApiLandwehrService:
             cookies=cookies,
             data=data,
         )
-        self.get_prado_pagestate(res.text)
+        self._get_prado_pagestate(res.text)
 
-        self.html_table_to_json(res.text)
+        self._html_table_to_json(res.text)
         return res
 
     # --------------------------------------------------------------------------
@@ -272,7 +280,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def add_time(self, session: httpx.Client, auftrag: str, year: int, month: int, day: int) -> httpx.Response | None:
+    def _add_time(self, session: httpx.Client, auftrag: str, year: int, month: int, day: int) -> httpx.Response | None:
         logging.log(logging.INFO, "try to add new current times...")
 
         time_to_set: datetime = datetime(year=year, month=month, day=day)
@@ -308,12 +316,12 @@ class ApiLandwehrService:
             work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (break_time_to_h - break_time_from_h)
             work_time_days_worked: float = work_time_hours_worked / 8
 
-            PRADO_CALLBACK_PARAMETER = {
+            prado_callback_parameter = {
                 time_to_set_str: [
                     {
                         "arbeit": {
                             "von": {
-                                "date": f"1970-02-01T{(work_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                "date": f"1970-02-01T{(work_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",  # noqa: E501
                                 "datum": work_time_from.strftime(self.format_date_time),
                             },
                             "bis": {
@@ -324,11 +332,11 @@ class ApiLandwehrService:
                         "pause": [
                             {
                                 "von": {
-                                    "date": f"1970-02-01T{(break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                    "date": f"1970-02-01T{(break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",  # noqa: E501
                                     "datum": break_time_from.strftime(self.format_date_time),
                                 },
                                 "bis": {
-                                    "date": f"1970-02-01T{(break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                    "date": f"1970-02-01T{(break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",  # noqa: E501
                                     "datum": break_time_to.strftime(self.format_date_time),
                                 },
                             }
@@ -380,7 +388,7 @@ class ApiLandwehrService:
                 "ctl0$PortalLayoutContent$Main$SignatureImage": "",
                 "ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde": "",
                 "ctl0$PortalLayoutContent$Main$TimesheetOverlay$PrintWechsel": "0",
-                "PRADO_CALLBACK_PARAMETER": json.dumps(PRADO_CALLBACK_PARAMETER),
+                "PRADO_CALLBACK_PARAMETER": json.dumps(prado_callback_parameter),
                 "PRADO_CALLBACK_TARGET": "ctl0$PortalLayoutContent$Main$SendData",
             }
             logging.log(
@@ -395,16 +403,15 @@ class ApiLandwehrService:
                 cookies=cookies,
                 data=data,
             )
-            self.get_prado_pagestate(res.text)
+            self._get_prado_pagestate(res.text)
 
-            print(res.text)
+            print(res.text)  # noqa: T201
 
             return res
-        else:
-            logging.log(
-                logging.INFO,
-                "... your defined time-range is always included (or anything else happen)",
-            )
+        logging.log(
+            logging.INFO,
+            "... your defined time-range is always included (or anything else happen)",
+        )
         return None
 
     # --------------------------------------------------------------------------
@@ -413,7 +420,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def get_prado_pagestate(self, text: str | None):
+    def _get_prado_pagestate(self, text: str | None):
         if text is not None:
             soup = bs.BeautifulSoup(text, "lxml")
             prado_pagestate_id = soup.find("input", attrs={"id": "PRADO_PAGESTATE"})
@@ -421,7 +428,7 @@ class ApiLandwehrService:
                 self.PRADO_PAGESTATE = prado_pagestate_id.get("value")
                 logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.PRADO_PAGESTATE}")
 
-    def html_table_to_json(self, text: str | None) -> None:
+    def _html_table_to_json(self, text: str | None) -> None:
         if text is not None:
             soup = bs.BeautifulSoup(text, "lxml")
             tbl = soup.find("table", attrs={"class", "erfassung"})

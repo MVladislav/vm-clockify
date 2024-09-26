@@ -1,3 +1,5 @@
+"""LOG HELPER."""
+
 import logging
 
 import coloredlogs
@@ -7,11 +9,14 @@ from vm_clockify.utils.config import settings
 
 
 class LogHelper:
+    """LOGGING."""
+
     def __init__(
         self,
         logging_verbose: int = settings.LOGGING_VERBOSE,
         logging_level: str = settings.LOGGING_LEVEL,
     ):
+        """INIT LOGGING."""
         # configure logger for requested verbosity
         if logging_verbose >= 4:
             log_format = "[%(asctime)s,%(msecs)03d] %(name)s[%(process)d] \
