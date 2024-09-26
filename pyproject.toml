@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69.0.3"]
+requires = ["setuptools>=70.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -15,7 +15,7 @@ license = { text = "MIT" }
 authors = [{ name = "MVladislav" }]
 
 dependencies = [
-  "setuptools>=69.0.3",
+  "setuptools>=75.0.0",
   "bs4==0.0.1",
   "click==8.1.7",
   "coloredlogs==15.0.1",
@@ -42,11 +42,11 @@ dev = [
   "pytest-env==1.1.1",
   "pytest-timeout==2.2.0",
   "pytest==7.4.3",
-  "ruff>=0.1.6",
+  "ruff>=0.6.7",
   "testfixtures==7.2.2",
   "types-aiofiles==23.2.0.0",
   "types-cachetools==5.3.0.7",
-  "types-setuptools>=69.0.0.20240125 ",
+  "types-setuptools>=75.1.0.20240917",
 ]
 
 [project.scripts]

@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
 
@@ -47,7 +47,7 @@ jobs:
         run: python3 setup.py sdist
 
       - name: archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PROJECT_NAME }}
           path: dist
@@ -63,12 +63,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
 
       - name: Download artifact from build step
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.PROJECT_NAME }}
           path: artifacts

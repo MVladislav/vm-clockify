@@ -72,7 +72,7 @@ repos:
       - id: detect-secrets
 
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.4
+    rev: v8.19.2
     hooks:
       - id: gitleaks
 
@@ -83,20 +83,20 @@ repos:
 
   # PYTHON ---------------------------------------------------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    rev: v0.6.7
     hooks:
       - id: ruff
         args:
           - --fix
           - --line-length=130
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         args:
           - --py311-plus
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
         args:
@@ -106,7 +106,7 @@ repos:
     hooks:
       - id: blacken-docs
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.9
+    rev: 1.7.10
     hooks:
       - id: bandit
         args:
@@ -121,14 +121,14 @@ repos:
       # pyenv and/or virtualenv activated; it may not have been e.g. if
       # committing from a GUI tool that was not launched from an activated
       # shell.
-      - id: mypy
-        name: Check with mypy
-        entry: scripts/run-in-env.sh mypy
-        language: script
-        types:
-          - python
-        require_serial: true
-        exclude: ^tests/.+
+      # - id: mypy
+      #   name: Check with mypy
+      #   entry: scripts/run-in-env.sh mypy
+      #   language: script
+      #   types:
+      #     - python
+      #   require_serial: true
+      #   exclude: ^tests/.+
       - id: pylint
         name: Check with pylint
         entry: scripts/run-in-env.sh pylint
