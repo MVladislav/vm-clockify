@@ -16,7 +16,7 @@ authors = [{ name = "MVladislav" }]
 
 dependencies = [
   "setuptools>=75.0.0",
-  "bs4==0.0.1",
+  "bs4==0.0.2",
   "click==8.1.7",
   "coloredlogs==15.0.1",
   "holidays==0.35",
