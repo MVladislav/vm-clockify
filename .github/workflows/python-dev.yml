@@ -11,7 +11,7 @@ on:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 env:
-  DEFAULT_PYTHON: "3.11"
+  DEFAULT_PYTHON: "3.12"
 
   GIT_BRANCH_NAME: "${{ github.ref }}"
   GIT_REPOSITORY_NAME: "${{ github.event.repository.name }}"
@@ -34,19 +34,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: set up Python ${{ env.DEFAULT_PYTHON }}
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
 
-      - name: install dependencies
+      - name: Install build dependencies
         run: |
-          python3 -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip build
 
-      - name: build binary wheel and a source tarball
-        run: python3 setup.py sdist
+      - name: Build binary wheel and source tarball
+        run: |
+          python3 -m build
 
-      - name: archive production artifacts
+      - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PROJECT_NAME }}
@@ -62,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: set up Python ${{ env.DEFAULT_PYTHON }}
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
@@ -73,11 +74,6 @@ jobs:
           name: ${{ env.PROJECT_NAME }}
           path: artifacts
 
-      - name: un-tar final result
+      - name: Install final result
         run: |
-          tar xvf vm_clockify-*.tar.gz
-        working-directory: artifacts
-
-      - name: install final result
-        run: |
-          python3 -m pip install .
+          python3 -m pip install artifacts/*.whl
