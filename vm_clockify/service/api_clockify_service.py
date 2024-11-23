@@ -3,7 +3,6 @@
 from datetime import date, datetime, timedelta
 import json
 import logging
-import pickle
 import re
 from re import Match
 import sys
@@ -27,15 +26,34 @@ from vm_clockify.utils.utils_helper import create_service_folder
 class IssueTime:
     """Issue Time."""
 
-    def __init__(self) -> None:
+    project: str | None = None
+    task: str | None = None
+    date: str | None = None
+    duration: dict[str, int] = {}
+    issue: list[str] = []
+    description: list[str] = []
+    issue_type: str | None = None
+
+    # Default mutable types are handled directly in annotations (no __post_init__)
+    def __init__(self, project=None, task=None, date=None, duration=None, issue=None, description=None, issue_type=None):
         """Init."""
-        self.project: str | None = None
-        self.task: str | None = None
-        self.date: str | None = None
-        self.duration: dict[str, int] = {}
-        self.issue: list[str] = []
-        self.description: list[str] = []
-        self.issue_type: str | None = None
+        if duration is None:
+            duration = {}
+        if issue is None:
+            issue = []
+        if description is None:
+            description = []
+        self.project = project
+        self.task = task
+        self.date = date
+        self.duration = duration
+        self.issue = issue
+        self.description = description
+        self.issue_type = issue_type
+
+    def to_dict(self):
+        """Convert the dataclass to a dictionary."""
+        return dict(self.__dict__.items())
 
 
 class PrintValues:
@@ -240,13 +258,12 @@ class ApiClockifyService:
                 self._calc_buffer_issue(task_name, project_name, results)
 
             # ------------------------------------------------------
-            # write result to file, to be used later for other api's
-            # example to import it into different service
-            with open(
-                f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}",
-                "wb",
-            ) as f:
-                pickle.dump(results, f)
+            # write result to file, to be used later for other api's example to import it into different service
+            serializable_results = {
+                key: value.to_dict() if isinstance(value, IssueTime) else value for key, value in results.items()
+            }
+            with open(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}", "w") as f:
+                json.dump(serializable_results, f)
 
             # print the result for manual check or copy/past usage
             self._print_result(results, time_details, time_count)

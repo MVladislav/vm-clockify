@@ -1,8 +1,8 @@
 """YOUTRACK."""
 
+import json
 import logging
 import os
-import pickle
 import sys
 
 import click
@@ -62,8 +62,10 @@ def upload(ctx: Context):
     try:
         service: ApiYoutrackService = ctx.service
         issues: dict[str, IssueTime] = {}
-        with open(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}", "rb") as f:
-            issues = pickle.load(f)
+        # Read data from a JSON file
+        with open(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}") as f:
+            serialized_issues = json.load(f)
+            issues = {key: IssueTime(**value) if isinstance(value, dict) else value for key, value in serialized_issues.items()}
         service.upload(issues=issues)
         if os.path.exists(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}"):
             os.remove(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}")
