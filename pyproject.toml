@@ -21,7 +21,7 @@ dependencies = [
   "coloredlogs==15.0.1",
   "holidays==0.35",
   "httpx==1.0.0b0",
-  "pydantic==2.7.0",
+  "pydantic==2.10.2",
   "pydantic-settings==2.6.1",
   "pytz==2023.3.post1",
   "starlette==0.41.3",
