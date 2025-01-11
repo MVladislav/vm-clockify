@@ -8,7 +8,7 @@ description = "clockify api usage to upload into youtrack."
 keywords = ["youtrack", "clockify", "time"]
 
 version = "1.0.0"
-requires-python = ">=3.13.0"
+requires-python = ">=3.12.0"
 readme = "README.md"
 license = { text = "MIT" }
 
