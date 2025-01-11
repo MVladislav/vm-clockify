@@ -24,7 +24,7 @@ class ApiLandwehrService:
     #
     #
     # --------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self) -> None:
         """INIT LANDWEHR."""
         logging.log(logging.DEBUG, "landwehr-api-service is initiated")
 
@@ -34,8 +34,8 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    PRADO_PAGESTATE: str | None = None
-    SSID: str | None = None
+    prado_pagestate: str | None = None
+    ssid: str | None = None
     format_date_day = "%Y-%m-%d"
     format_date_day_key = "%d.%m.%Y"
     format_date_time = "%H:%M:%S"
@@ -48,7 +48,7 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def upload(self, year: int, month: int, day: int, auftrag: str):
+    def upload(self, year: int, month: int, day: int, auftrag: str) -> None:
         """Upload to Landwehr."""
         try:
             with httpx.Client() as session:
@@ -58,7 +58,7 @@ class ApiLandwehrService:
 
                 # ------------------------------------------------------------------
                 # LOGIN CHECK
-                if (res.status_code in (200, 302)) and self.PRADO_PAGESTATE is not None and self.SSID is not None:
+                if (res.status_code in (200, 302)) and self.prado_pagestate is not None and self.ssid is not None:
                     # ----------------------------------------------------------
                     # GET TIME
                     self._get_time(session, year, month)
@@ -117,8 +117,8 @@ class ApiLandwehrService:
             headers=headers,
             params=params,
         )
-        self.SSID = response.cookies["SSID"]
-        logging.log(logging.DEBUG, self.SSID)
+        self.ssid = response.cookies["SSID"]
+        logging.log(logging.DEBUG, self.ssid)
 
         self._get_prado_pagestate(response.text)
 
@@ -137,7 +137,7 @@ class ApiLandwehrService:
             "Accept-Language": "en-US,de-DE;q=0.5",
             "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/x-www-form-urlencoded",
-            "Origin": settings.LANDWEHR_API_URL,
+            "Origin": settings.LANDWEHR_API_URL or "",
             "DNT": "1",
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
@@ -152,11 +152,11 @@ class ApiLandwehrService:
         }
 
         cookies = {
-            "SSID": self.SSID,
+            "SSID": self.ssid,
         }
 
         data = {
-            "PRADO_PAGESTATE": self.PRADO_PAGESTATE,
+            "PRADO_PAGESTATE": self.prado_pagestate,
             "ctl0$PortalLayoutContent$Main$MandantSelect": settings.LANDWEHR_MAND_NR,
             "ctl0$PortalLayoutContent$Main$loginname": settings.LANDWEHR_USERNAME,
             "ctl0$PortalLayoutContent$Main$password": settings.LANDWEHR_PASSWORD,
@@ -172,10 +172,10 @@ class ApiLandwehrService:
             data=data,
             follow_redirects=False,
         )
-        self.SSID = session.cookies["SSID"]
+        self.ssid = session.cookies["SSID"]
         logging.log(logging.DEBUG, res.cookies)
         logging.log(logging.DEBUG, session.cookies)
-        logging.log(logging.DEBUG, self.SSID)
+        logging.log(logging.DEBUG, self.ssid)
 
         return res
 
@@ -211,12 +211,12 @@ class ApiLandwehrService:
             ),
         }
 
-        if not self.SSID:
+        if not self.ssid:
             logging.log(logging.ERROR, "failed because SSID is not set")
             return None
 
         cookies = {
-            "SSID": self.SSID,
+            "SSID": self.ssid,
         }
 
         res = session.get(
@@ -239,7 +239,7 @@ class ApiLandwehrService:
             "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "X-Requested-With": "XMLHttpRequest",
-            "Origin": settings.LANDWEHR_API_URL,
+            "Origin": settings.LANDWEHR_API_URL or "",
             "DNT": "1",
             "Connection": "keep-alive",
             "Sec-Fetch-Dest": "empty",
@@ -249,12 +249,12 @@ class ApiLandwehrService:
         }
 
         cookies = {
-            "SSID": self.SSID,
+            "SSID": self.ssid,
         }
 
         data = {
             "MAX_FILE_SIZE": "33554432",
-            "PRADO_PAGESTATE": self.PRADO_PAGESTATE,
+            "PRADO_PAGESTATE": self.prado_pagestate,
             "ctl0$PortalLayoutContent$Main$zeitraum": f"{year}|{month}",
             "ctl0$PortalLayoutContent$Main$SignatureImage": "",
             "ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde": "",
@@ -283,7 +283,7 @@ class ApiLandwehrService:
     def _add_time(self, session: httpx.Client, auftrag: str, year: int, month: int, day: int) -> httpx.Response | None:
         logging.log(logging.INFO, "try to add new current times...")
 
-        time_to_set: datetime = datetime(year=year, month=month, day=day)
+        time_to_set: datetime = datetime(year=year, month=month, day=day, tzinfo=settings.TIME_ZONE)
         time_to_set_str: str = time_to_set.strftime(self.format_date_day_key)
 
         if self.always_worked is not None and self.always_worked.get(time_to_set_str, None) is None:
@@ -295,10 +295,18 @@ class ApiLandwehrService:
                 day=1,
                 hour=work_time_from_h,
                 minute=work_time_from_m,
+                tzinfo=settings.TIME_ZONE,
             )
             work_time_to_h: int = 17
             work_time_to_m: int = 0
-            work_time_to: datetime = datetime(year=1970, month=2, day=1, hour=work_time_to_h, minute=work_time_to_m)
+            work_time_to: datetime = datetime(
+                year=1970,
+                month=2,
+                day=1,
+                hour=work_time_to_h,
+                minute=work_time_to_m,
+                tzinfo=settings.TIME_ZONE,
+            )
 
             break_time_from_h: int = 12
             break_time_from_m: int = 0
@@ -308,38 +316,51 @@ class ApiLandwehrService:
                 day=1,
                 hour=break_time_from_h,
                 minute=break_time_from_m,
+                tzinfo=settings.TIME_ZONE,
             )
             break_time_to_h: int = 13
             break_time_to_m: int = 0
-            break_time_to: datetime = datetime(year=1970, month=2, day=1, hour=break_time_to_h, minute=break_time_to_m)
+            break_time_to: datetime = datetime(
+                year=1970,
+                month=2,
+                day=1,
+                hour=break_time_to_h,
+                minute=break_time_to_m,
+                tzinfo=settings.TIME_ZONE,
+            )
 
             work_time_hours_worked: int = (work_time_to_h - work_time_from_h) - (break_time_to_h - break_time_from_h)
             work_time_days_worked: float = work_time_hours_worked / 8
+
+            work_from = (work_time_from + timedelta(hours=-1)).strftime(self.format_date_time)
+            work_to = (work_time_to + timedelta(hours=-1)).strftime(self.format_date_time)
+            break_from = (break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)
+            break_to = (break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)
 
             prado_callback_parameter = {
                 time_to_set_str: [
                     {
                         "arbeit": {
                             "von": {
-                                "date": f"1970-02-01T{(work_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",  # noqa: E501
+                                "date": f"1970-02-01T{work_from}.000Z",
                                 "datum": work_time_from.strftime(self.format_date_time),
                             },
                             "bis": {
-                                "date": f"1970-02-01T{(work_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",
+                                "date": f"1970-02-01T{work_to}.000Z",
                                 "datum": work_time_to.strftime(self.format_date_time),
                             },
                         },
                         "pause": [
                             {
                                 "von": {
-                                    "date": f"1970-02-01T{(break_time_from + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",  # noqa: E501
+                                    "date": f"1970-02-01T{break_from}.000Z",
                                     "datum": break_time_from.strftime(self.format_date_time),
                                 },
                                 "bis": {
-                                    "date": f"1970-02-01T{(break_time_to + timedelta(hours=-1)).strftime(self.format_date_time)}.000Z",  # noqa: E501
+                                    "date": f"1970-02-01T{break_to}.000Z",
                                     "datum": break_time_to.strftime(self.format_date_time),
                                 },
-                            }
+                            },
                         ],
                         "art": "1",
                         "nacht": False,
@@ -351,8 +372,8 @@ class ApiLandwehrService:
                         "auftrag": auftrag,
                         "projekt": None,
                         "bemerkung": None,
-                    }
-                ]
+                    },
+                ],
             }
             # logging.log(
             #     logging.DEBUG,
@@ -368,7 +389,7 @@ class ApiLandwehrService:
                 "Accept-Encoding": "gzip, deflate, br",
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 "X-Requested-With": "XMLHttpRequest",
-                "Origin": settings.LANDWEHR_API_URL,
+                "Origin": settings.LANDWEHR_API_URL or "",
                 "DNT": "1",
                 "Connection": "keep-alive",
                 "Sec-Fetch-Dest": "empty",
@@ -383,7 +404,7 @@ class ApiLandwehrService:
 
             data = {
                 "MAX_FILE_SIZE": "33554432",
-                "PRADO_PAGESTATE": self.PRADO_PAGESTATE,
+                "PRADO_PAGESTATE": self.prado_pagestate,
                 "ctl0$PortalLayoutContent$Main$zeitraum": f"{year}|{month}",
                 "ctl0$PortalLayoutContent$Main$SignatureImage": "",
                 "ctl0$PortalLayoutContent$Main$TimesheetOverlay$TimesheetKunde": "",
@@ -420,13 +441,13 @@ class ApiLandwehrService:
     #
     # --------------------------------------------------------------------------
 
-    def _get_prado_pagestate(self, text: str | None):
+    def _get_prado_pagestate(self, text: str | None) -> None:
         if text is not None:
             soup = bs.BeautifulSoup(text, "lxml")
             prado_pagestate_id = soup.find("input", attrs={"id": "PRADO_PAGESTATE"})
             if prado_pagestate_id is not None:
-                self.PRADO_PAGESTATE = prado_pagestate_id.get("value")
-                logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.PRADO_PAGESTATE}")
+                self.prado_pagestate = prado_pagestate_id.get("value")
+                logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.prado_pagestate}")
 
     def _html_table_to_json(self, text: str | None) -> None:
         if text is not None:
@@ -435,7 +456,7 @@ class ApiLandwehrService:
             if tbl is not None:
                 logging.log(logging.INFO, "try parse table...")
 
-                table_data = {}
+                table_data: dict[str, Any] = {}
                 tbl_body = tbl.find("tbody")
 
                 for tr in tbl_body.find_all("tr", recursive=False):
@@ -452,8 +473,9 @@ class ApiLandwehrService:
                         elif "pause" in attrs:
                             val["pause_start"] = td.find("input", attrs={"class": "von"}).get("value")
                             val["pause_end"] = td.find("input", attrs={"class": "bis"}).get("value")
-                    if val.get("date") is not None and val.get("work_start") is not None:
-                        table_data[val.get("date")] = val
+                    date_key: str | None = val.get("date")
+                    if date_key is not None and val.get("work_start") is not None:
+                        table_data[date_key] = val
 
                 self.always_worked = table_data
                 logging.log(logging.DEBUG, json.dumps(table_data, indent=4))

@@ -16,7 +16,7 @@ from vm_clockify.utils.utils_helper import Context, pass_context
 # ------------------------------------------------------------------------------
 @click.group()
 @pass_context
-def cli(ctx: Context):
+def cli(ctx: Context) -> None:
     """Youtrack-api usage command."""
     ctx.service = ApiLandwehrService()
 
@@ -32,7 +32,7 @@ def cli(ctx: Context):
 @click.option("-d", "--day", type=int, help="day to add new time", required=True)
 @click.option("-a", "--auftrag", type=str, help="auftrag where to add the time to", required=True)
 @pass_context
-def upload(ctx: Context, year: int, month: int, day: int, auftrag: str):
+def upload(ctx: Context, year: int, month: int, day: int, auftrag: str) -> None:
     """Will insert times for default logging into landwehr."""
     try:
         service: ApiLandwehrService = ctx.service

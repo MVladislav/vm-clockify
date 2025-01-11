@@ -1,7 +1,6 @@
 """UTILS HELPER."""
 
 import logging
-import os
 from pathlib import Path
 import re
 import sys
@@ -23,7 +22,7 @@ from vm_clockify.utils.config import settings
 class Context:
     """CONTEXT."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """INIT CONTEXT."""
         logging.log(logging.DEBUG, "init context...")
         self.service: Any = None
@@ -50,7 +49,7 @@ def create_service_folder(
         path = create_service_path(host=host, split_host=split_host, split_project=split_project)
         path = f"{path}/{name}" if name is not None else path
         if path.startswith("./"):
-            path = f"{os.getcwd()}{path[1:]}"
+            path = f"{Path.cwd()}{path[1:]}"
         if create_folder(path):
             logging.log(logging.DEBUG, f"new folder created:: {path}")
             return path
@@ -61,14 +60,21 @@ def create_service_folder(
     sys.exit(1)
 
 
-def create_folder(path: str) -> bool:
+def create_folder(path: str, mode: int = 0o700) -> bool:
     """Create a folder under giving path."""
     try:
-        Path(path).mkdir(parents=True, exist_ok=True, mode=0o700)
-        return True
-
+        folder = Path(path)
+        folder.mkdir(parents=True, exist_ok=True, mode=mode)
+    except PermissionError:
+        logging.exception("Permission denied")
+    except FileNotFoundError:
+        logging.exception("Directory not found")
+    except OSError:
+        logging.exception("OS error")
     except Exception as e:
-        logging.log(logging.CRITICAL, e, exc_info=True)
+        logging.critical(f"Unexpected error occurred: {e}", exc_info=True)
+    else:
+        return True
     return False
 
 
@@ -101,9 +107,7 @@ def create_service_path(
 def uri_validator(url: str) -> str | None:
     """No desc."""
     try:
-        if url.endswith("/"):
-            url = url[:-1]
-        result = urlparse(url)
+        result = urlparse(url.removesuffix("/"))
         if all([result.scheme, result.netloc]):
             return url
 
@@ -112,13 +116,13 @@ def uri_validator(url: str) -> str | None:
     return None
 
 
-def url_checker(url) -> bool:
+def url_checker(url: httpx.URL | str) -> bool:
     """No desc."""
     try:
         get = httpx.get(url, timeout=5)
         logging.log(logging.DEBUG, f"{url}: returns '{get.status_code}'")
-        # if get.status_code == 200:
-        return True
+        if get.status_code == 200:
+            return True
 
     except httpx.RequestError as e:
         logging.log(logging.DEBUG, f"{url}: fails with '{e}'")
@@ -128,8 +132,10 @@ def url_checker(url) -> bool:
 
 
 def slugify(value: str | None, allow_unicode: bool = False) -> str | None:
-    """No desc."""
-    """https://github.com/django/django/blob/main/django/utils/text.py"""
+    """No desc.
+
+    https://github.com/django/django/blob/main/django/utils/text.py
+    """
     value = str(value)
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)

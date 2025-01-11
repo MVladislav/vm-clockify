@@ -1,6 +1,8 @@
 """SETTINGS."""
 
+from datetime import tzinfo
 import logging
+from zoneinfo import ZoneInfo
 
 from starlette.config import Config
 from stringcolor.ops import Bold
@@ -23,7 +25,7 @@ class Settings:
     # --------------------------------------------------------------------------
     PROJECT_NAME: str = config("PROJECT_NAME", default="vm-clockify")
     VERSION: str = config("VERSION", default="1.1.0")
-    TIME_ZONE: str = config("TIME_ZONE", default="Europe/Berlin")
+    TIME_ZONE: tzinfo = ZoneInfo(config("TIME_ZONE", default="UTC"))  # Europe/Berlin
     # CRITICAL | ERROR | SUCCESS | WARNING | NOTICE | INFO | VERBOSE | DEBUG | SPAM | NOTSET
     LOGGING_LEVEL: str = config("LOGGING_LEVEL", default="DEBUG")
     # 0-4

@@ -2,7 +2,7 @@
 
 import json
 import logging
-import os
+from pathlib import Path
 import sys
 
 import click
@@ -36,7 +36,7 @@ from vm_clockify.utils.utils_helper import Context, create_service_folder, pass_
     required=True,
 )
 @pass_context
-def cli(ctx: Context, key: str, endpoint: str):
+def cli(ctx: Context, key: str, endpoint: str) -> None:
     """Youtrack-api usage command."""
     if uri_validator(endpoint):
         settings.YOUTRACK_API_KEY = key
@@ -54,7 +54,7 @@ def cli(ctx: Context, key: str, endpoint: str):
 # ------------------------------------------------------------------------------
 @cli.command()
 @pass_context
-def upload(ctx: Context):
+def upload(ctx: Context) -> None:
     """Will insert times collected from clockify into youtrack.
 
     HINT: run clockify times api first, else there are no records to be uploaded.
@@ -63,12 +63,16 @@ def upload(ctx: Context):
         service: ApiYoutrackService = ctx.service
         issues: dict[str, IssueTime] = {}
         # Read data from a JSON file
-        with open(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}") as f:
+        tmp_file_path = Path(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}")
+        with tmp_file_path.open(encoding="utf-8") as f:
             serialized_issues = json.load(f)
             issues = {key: IssueTime(**value) if isinstance(value, dict) else value for key, value in serialized_issues.items()}
+
         service.upload(issues=issues)
-        if os.path.exists(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}"):
-            os.remove(f"{create_service_folder()}/{settings.CLOCKIFY_TMP_FILE}")
+
+        if tmp_file_path.exists():
+            tmp_file_path.unlink()  # This removes the file
+
     except KeyboardInterrupt as k:
         logging.log(logging.DEBUG, f"process interrupted! ({k})")
         sys.exit(5)

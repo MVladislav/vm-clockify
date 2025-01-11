@@ -1,6 +1,6 @@
 """Clockify."""
 
-import datetime
+from datetime import datetime
 import logging
 import sys
 
@@ -34,7 +34,7 @@ from vm_clockify.utils.utils_helper import Context, pass_context, uri_validator
     required=True,
 )
 @pass_context
-def cli(ctx: Context, key: str, endpoint: str):
+def cli(ctx: Context, key: str, endpoint: str) -> None:
     """Clockify api usage command."""
     if uri_validator(endpoint):
         settings.CLOCKIFY_API_KEY = key
@@ -52,7 +52,7 @@ def cli(ctx: Context, key: str, endpoint: str):
 # ------------------------------------------------------------------------------
 @cli.command()
 @pass_context
-def user(ctx: Context):
+def user(ctx: Context) -> None:
     """Clockify API will return some needed information from user for times-api."""
     try:
         service: ApiClockifyService = ctx.service
@@ -91,16 +91,16 @@ def user(ctx: Context):
     "-y",
     "--year",
     type=int,
-    help=f"from until now or specific day, how much days to collect backwards [{datetime.datetime.now().year}]",
-    default=datetime.datetime.now().year,
+    help=f"from until now or specific day, how much days to collect backwards [{datetime.now(tz=settings.TIME_ZONE).year}]",
+    default=datetime.now(tz=settings.TIME_ZONE).year,
     required=True,
 )
 @click.option(
     "-m",
     "--month",
     type=int,
-    help=f"from until now or specific day, how much days to collect backwards [{datetime.datetime.now().month}]",
-    default=datetime.datetime.now().month,
+    help=f"from until now or specific day, how much days to collect backwards [{datetime.now(tz=settings.TIME_ZONE).month}]",
+    default=datetime.now(tz=settings.TIME_ZONE).month,
     required=True,
 )
 @click.option(
@@ -124,11 +124,11 @@ def remaining_days(
     ctx: Context,
     workspace_id: str,
     user_id: str,
-    year,
-    month,
-    taken_free_days=0,
-    illness_days=0,
-):
+    year: int,
+    month: int,
+    taken_free_days: int = 0,
+    illness_days: int = 0,
+) -> None:
     """Clockify pi will print you remaining work-time for a specific month in a year.
 
     HINT: run first user-api to get workspace ID and user ID
@@ -250,7 +250,7 @@ def times(
     buffer: bool,
     time_details: bool,
     time_count: bool,
-):
+) -> None:
     """Clockify api will print you work-time.
 
     HINT: run first user-api to get workspace ID and user ID

@@ -1,7 +1,7 @@
 """MAIN."""
 
 import logging
-import os
+from pathlib import Path
 
 import click
 
@@ -20,7 +20,7 @@ print(  # noqa: T201
    /  |/  / |  / / /___ _____/ (_)____/ /___ __   __
   / /|_/ /| | / / / __ `/ __  / / ___/ / __ `/ | / /
  / /  / / | |/ / / /_/ / /_/ / (__  ) / /_/ /| |/ /
-/_/  /_/  |___/_/\__,_/\__,_/_/____/_/\__,_/ |___/"""
+/_/  /_/  |___/_/\__,_/\__,_/_/____/_/\__,_/ |___/""",
 )
 print("**************** 4D 56 6C 61 64 69 73 6C 61 76 *****************")  # noqa: T201
 print("****************************************************************")  # noqa: T201
@@ -39,20 +39,23 @@ print()  # noqa: T201
 class ComplexCLI(click.MultiCommand):
     """ComplexCLI."""
 
-    def list_commands(self, ctx):
+    def list_commands(self, _: click.Context) -> list[str]:
         """ComplexCLI."""
-        rv = []
-        for filename in os.listdir(os.path.join(os.path.dirname(__file__), "./commands")):
-            if filename.endswith(".py") and not filename.startswith("__"):
-                rv.append(filename[:-3])
-        rv.sort()
-        return rv
+        commands_dir = Path(__file__).parent / "commands"
+        return sorted(
+            [
+                filename.stem
+                for filename in commands_dir.iterdir()
+                if filename.suffix == ".py" and not filename.name.startswith("__")
+            ],
+        )
 
-    def get_command(self, ctx, name):
+    def get_command(self, _: click.Context, cmd_name: str) -> click.core.Group | None:
         """ComplexCLI."""
         try:
-            mod = __import__(f"vm_clockify.commands.{name}", None, None, ["cli"])
-            return mod.cli
+            mod = __import__(f"vm_clockify.commands.{cmd_name}", None, None, ["cli"])
+            if isinstance(mod.cli, click.core.Group):
+                return mod.cli
 
         except ImportError as e:
             logging.log(logging.CRITICAL, e)
@@ -93,7 +96,7 @@ CONTEXT_SETTINGS = {
             "VERBOSE",
             "DEBUG",
             "SPAM",
-        ]
+        ],
     ),
     help=f"which log level to use [{settings.LOGGING_LEVEL}]",
     default=settings.LOGGING_LEVEL,
@@ -130,7 +133,7 @@ def cli(
     project: str,
     disable_split_project: bool,
     disable_split_host: bool,
-):
+) -> None:
     """Welcome to {PROJECT_NAME}.
 
     Example: "{PROJECT_NAME} -vv -p 'nice project' -dsh --home . <COMMAND> [OPTIONS] <COMMAND> [OPTIONS]"
@@ -143,6 +146,6 @@ def cli(
     settings.DISABLE_SPLIT_PROJECT = disable_split_project
     settings.DISABLE_SPLIT_HOST = disable_split_host
     # INIT: log helper global
-    LogHelper(logging_verbose=settings.LOGGING_VERBOSE, logging_level=settings.LOGGING_LEVEL)
+    LogHelper()
     logging.log(logging.DEBUG, "init start_up...")
     settings.print()

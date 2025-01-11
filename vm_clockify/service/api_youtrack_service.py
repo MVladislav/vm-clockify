@@ -4,10 +4,8 @@ from datetime import datetime
 import json
 import logging
 import sys
-from xmlrpc.client import Boolean
 
 import httpx
-import pytz
 
 from vm_clockify.utils.config import settings
 
@@ -27,7 +25,7 @@ class ApiYoutrackService:
     #
     #
     # --------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self) -> None:
         """Youtrack service."""
         logging.log(logging.DEBUG, "youtrack-api-service is initiated")
         self.format_date_day: str = "%Y-%m-%d"
@@ -51,22 +49,22 @@ class ApiYoutrackService:
             logging.log(logging.INFO, "Upload to YouTrack started ...")
             with httpx.Client() as session:
                 for key, issue in issues.items():
-                    if key.startswith("-> sum:") or issue.date is None:
+                    if key.startswith("-> sum:") or issue.issue_date is None:
                         continue
 
-                    current_day = datetime.strptime(issue.date, self.format_date_day)
-                    timezone = pytz.timezone(settings.TIME_ZONE)
-                    current_day = timezone.localize(current_day)
-                    date = (int(current_day.timestamp()) * 1000) + 7200000
+                    current_day = int(
+                        datetime.strptime(issue.issue_date, self.format_date_day).replace(tzinfo=settings.TIME_ZONE).timestamp()
+                        * 1000,
+                    )
 
                     description = "\n- ".join(issue.description)
                     description = f"- {description}"
                     body = {
                         "usesMarkdown": True,
                         "text": description,
-                        "date": date,
+                        "date": current_day,
                         "duration": {
-                            "presentation": f'{issue.duration.get("h",0)}h {issue.duration.get("m",0)}m',
+                            "presentation": f"{issue.duration.get('h', 0)}h {issue.duration.get('m', 0)}m",
                         },
                     }
                     if "..." in issue.issue[0]:
@@ -81,12 +79,18 @@ class ApiYoutrackService:
                         if issue_type_id:
                             body["type"] = {"id": issue_type_id}
 
-                    is_issue_uploaded = self._check_issue_exists(session, issue.issue[0], description, issue.date, date)
+                    is_issue_uploaded = self._check_issue_exists(
+                        session,
+                        issue.issue[0],
+                        description,
+                        issue.issue_date,
+                        current_day,
+                    )
 
                     if is_issue_uploaded:
                         logging.log(
                             logging.INFO,
-                            f"===>> Issue {issue.issue[0]} for date {issue.date} is always uploaded",
+                            f"===>> Issue {issue.issue[0]} for date {issue.issue_date} is always uploaded",
                         )
                         continue
 
@@ -112,7 +116,7 @@ class ApiYoutrackService:
         except Exception as e:
             logging.log(logging.CRITICAL, e, exc_info=True)
 
-    def _check_issue_exists(self, session: httpx.Client, issue_id: str, desc: str, date: str, start_end: int) -> Boolean:
+    def _check_issue_exists(self, session: httpx.Client, issue_id: str, desc: str, date: str, start_end: int) -> bool:
         fields = "id,date,text"
         query = f'work: "{desc}" issue: {issue_id} work date: {date}'
         # path = f"workItems?fields={fields}&query={query}&author=me&creator=me&start={start_end}&end={(start_end)}"
@@ -125,8 +129,8 @@ class ApiYoutrackService:
             parsed = json.loads(res.text)
             try:
                 for item in parsed:
-                    logging.log(logging.DEBUG, f'  - compare :: {item["text"]} :: {desc}')
-                    logging.log(logging.DEBUG, f'  - compare :: {item["date"]} :: {start_end}')
+                    logging.log(logging.DEBUG, f"  - compare :: {item['text']} :: {desc}")
+                    logging.log(logging.DEBUG, f"  - compare :: {item['date']} :: {start_end}")
                 return next(item for item in parsed if item["text"] == desc and item["date"] == start_end) is not None
             except StopIteration:
                 return False
