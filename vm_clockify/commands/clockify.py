@@ -213,6 +213,13 @@ def remaining_days(
     default=None,
 )
 @click.option(
+    "-is",
+    "--issue-search",
+    type=str,
+    help="specific issue name to filter for (offline filter) [None]",
+    default=None,
+)
+@click.option(
     "-c",
     "--combine",
     help="if similar tasks should be combined into one bigger described task [false]",
@@ -246,6 +253,7 @@ def times(
     specific_day: str,
     project_search: str,
     task_search: str,
+    issue_search: str,
     combine: bool,
     buffer: bool,
     time_details: bool,
@@ -265,8 +273,9 @@ def times(
             days_to_subtract=days_to_subtract,
             page_size=page_size,
             specific_day=specific_day,
-            project_name=project_search,
-            task_name=task_search,
+            filter_project_name=project_search,
+            filter_task_name=task_search,
+            filter_issue_id=issue_search,
             combine=combine,
             buffer=buffer,
             time_details=time_details,

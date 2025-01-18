@@ -231,8 +231,9 @@ class ApiClockifyService:
         days_to_subtract: int = 0,
         page_size: int = 50,
         specific_day: str | None = None,
-        project_name: str | None = None,
-        task_name: str | None = None,
+        filter_project_name: str | None = None,
+        filter_task_name: str | None = None,
+        filter_issue_id: str | None = None,
         combine: bool = False,
         buffer: bool = False,
         time_details: bool = False,
@@ -261,11 +262,11 @@ class ApiClockifyService:
             results: dict[str, IssueTime] = {}
 
             # proceed the parsed api list into its needed task information
-            self._proceed_work_issues(results, parsed, combine, project_name, task_name)
+            self._proceed_work_issues(results, parsed, combine, filter_project_name, filter_task_name, filter_issue_id)
 
             # add also a generic buffer issue for not specific work
             if buffer:
-                self._calc_buffer_issue(task_name, project_name, results)
+                self._calc_buffer_issue(results)
 
             # ------------------------------------------------------
             # write result to file, to be used later for other api's example to import it into different service
@@ -328,8 +329,9 @@ class ApiClockifyService:
         results: dict[str, IssueTime],
         parsed: list[Any],
         combine: bool,
-        project_name: str | None,
-        task_name: str | None,
+        filter_project_name: str | None,
+        filter_task_name: str | None,
+        filter_issue_id: str | None,
     ) -> None:
         for work in parsed:
             if not isinstance(work, dict):
@@ -366,15 +368,22 @@ class ApiClockifyService:
                 datetime.strptime(time_start, self.format_date_from).replace(tzinfo=settings.TIME_ZONE) if time_start else None
             )
 
-            # filter
-            if current_project is not None and project_name is not None and project_name not in current_project:
+            # filter inside task and project
+            if current_project is not None and filter_project_name is not None and filter_project_name not in current_project:
                 current_project = None
-            if current_task is not None and task_name is not None and task_name not in current_task:
+            if current_task is not None and filter_task_name is not None and filter_task_name not in current_task:
                 current_task = None
+
+            # if current_task is None:
+            #     logging.debug("there is no 'task name' specified")
+            #     continue
+            if current_project is None:
+                logging.debug("there is no 'project name' name specified")
+                continue
 
             # if time can be parsed, start to save the result
             if current_time_start is None:
-                logging.log(logging.ERROR, "failed to parse current date start")
+                logging.error("failed to parse current date start")
                 sys.exit(1)
             # ----------------------------------------------
             # if start date parsed correct, get only current day without time
@@ -388,12 +397,8 @@ class ApiClockifyService:
             )
 
             if current_issue is None:
-                logging.log(
-                    logging.WARNING,
-                    "failed to get or parse base issue information for:",
-                )
-                logging.log(
-                    logging.WARNING,
+                logging.warning("failed to get or parse base issue information for:")
+                logging.warning(
                     f"""
                         - timeStart: {current_time_start}
                         - task: {current_task}
@@ -402,15 +407,13 @@ class ApiClockifyService:
                         - timeDuration: {current_time_duration}
                     """,
                 )
+
+            # filter specific issue
+            if filter_issue_id is not None and current_issue is not None and filter_issue_id not in current_issue:
+                current_issue = None
+
+            if current_issue is None:
                 continue
-
-            # if current_task is None:
-            #     logging.log(logging.ERROR, "there is no 'task name' specified")
-            #     sys.exit(1)
-
-            if current_project is None:
-                logging.log(logging.ERROR, "there is no 'project name' name specified")
-                sys.exit(1)
 
             # ----------------------------------------------
             # S1:: for a complete time overview for a day
@@ -439,17 +442,8 @@ class ApiClockifyService:
                 current_description=current_description,
             )
 
-    def _calc_buffer_issue(
-        self,
-        task_name: str | None,
-        project_name: str | None,
-        results: dict[str, IssueTime],
-    ) -> None:
-        if (
-            (task_name is not None or project_name is not None)  # TODO: check why this was checked  # noqa: FIX002
-            or settings.WORK_TIME_DEFAULT_ISSUE is None
-            or settings.WORK_TIME_DEFAULT_COMMENT is None
-        ):
+    def _calc_buffer_issue(self, results: dict[str, IssueTime]) -> None:
+        if settings.WORK_TIME_DEFAULT_ISSUE is None or settings.WORK_TIME_DEFAULT_COMMENT is None:
             return
 
         for key, value in results.copy().items():
@@ -625,7 +619,7 @@ class ApiClockifyService:
         if current_issue is None:
             logging.log(
                 logging.WARNING,
-                "issue has not any id in task or project set",
+                f"issue has not any id in task or project set {current_issue}",
             )
 
         if isinstance(current_issue, str):

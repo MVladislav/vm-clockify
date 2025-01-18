@@ -126,7 +126,7 @@ extra-standard-library = ["typing_extensions"]
 max-complexity = 20
 
 [tool.ruff.lint.pylint]
-max-args = 12
+max-args = 13
 max-branches = 25
 max-statements = 70
 max-returns = 10
@@ -215,6 +215,6 @@ never-returning-functions = ["sys.exit", "argparse.parse_error"]
 [tool.pylint.DESIGN]
 max-branches = 20             # too-many-branches
 max-parents = 10
-max-positional-arguments = 12 # too-many-positional-arguments
+max-positional-arguments = 13 # too-many-positional-arguments
 max-returns = 7
 max-statements = 60           # too-many-statements
