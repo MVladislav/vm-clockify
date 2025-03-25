@@ -22,7 +22,7 @@ dependencies = [
   "httpx==0.28.1",            # https://pypi.org/project/httpx
   "pydantic==2.10.5",         # https://pypi.org/project/pydantic
   "pydantic-settings==2.7.1", # https://pypi.org/project/pydantic-settings
-  "pytz==2024.2",             # https://pypi.org/project/pytz
+  "pytz==2025.2",             # https://pypi.org/project/pytz
   "starlette==0.45.2",        # https://pypi.org/project/starlette
   "string-color==1.2.3",      # https://pypi.org/project/string-color
   "verboselogs==1.7",         # https://pypi.org/project/verboselogs
