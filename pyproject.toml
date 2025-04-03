@@ -18,12 +18,12 @@ dependencies = [
   "bs4==0.0.2",               # https://pypi.org/project/bs4
   "click==8.1.8",             # https://pypi.org/project/click
   "coloredlogs==15.0.1",      # https://pypi.org/project/coloredlogs
-  "holidays==0.64",           # https://pypi.org/project/holidays
+  "holidays==0.69",           # https://pypi.org/project/holidays
   "httpx==0.28.1",            # https://pypi.org/project/httpx
-  "pydantic==2.10.5",         # https://pypi.org/project/pydantic
-  "pydantic-settings==2.7.1", # https://pypi.org/project/pydantic-settings
+  "pydantic==2.11.2",         # https://pypi.org/project/pydantic
+  "pydantic-settings==2.8.1", # https://pypi.org/project/pydantic-settings
   "pytz==2024.2",             # https://pypi.org/project/pytz
-  "starlette==0.45.2",        # https://pypi.org/project/starlette
+  "starlette==0.46.1",        # https://pypi.org/project/starlette
   "string-color==1.2.3",      # https://pypi.org/project/string-color
   "verboselogs==1.7",         # https://pypi.org/project/verboselogs
 ]
