@@ -445,37 +445,79 @@ class ApiLandwehrService:
         if text is not None:
             soup = bs.BeautifulSoup(text, "lxml")
             prado_pagestate_id = soup.find("input", attrs={"id": "PRADO_PAGESTATE"})
-            if prado_pagestate_id is not None:
-                self.prado_pagestate = prado_pagestate_id.get("value")
-                logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.prado_pagestate}")
+            if isinstance(prado_pagestate_id, bs.Tag):  # Ensure prado_pagestate_id is of type Tag
+                value = prado_pagestate_id.get("value")
+                if isinstance(value, str):  # Ensure the value is a string
+                    self.prado_pagestate = value
+                    logging.log(logging.DEBUG, f"PRADO_PAGESTATE:: {self.prado_pagestate}")
 
     def _html_table_to_json(self, text: str | None) -> None:
-        if text is not None:
-            soup = bs.BeautifulSoup(text, "lxml")
-            tbl = soup.find("table", attrs={"class", "erfassung"})
-            if tbl is not None:
-                logging.log(logging.INFO, "try parse table...")
+        if not text:
+            return
 
-                table_data: dict[str, Any] = {}
-                tbl_body = tbl.find("tbody")
+        soup = bs.BeautifulSoup(text, "lxml")
+        tbl = soup.find("table", attrs={"class": "erfassung"})  # Corrected type of `attrs`
+        if not isinstance(tbl, bs.Tag):  # Ensure tbl is of type Tag
+            return
 
-                for tr in tbl_body.find_all("tr", recursive=False):
-                    val = {}
-                    for i, td in enumerate(tr.find_all("td", recursive=False)):
-                        attrs: list[str] = td.get_attribute_list("class")
-                        if i == 0:
-                            val["tag"] = td.find("span").text
-                        elif "datum" in attrs:
-                            val["date"] = td.text
-                        elif "arbeit" in attrs:
-                            val["work_start"] = td.find("input", attrs={"class": "von"}).get("value")
-                            val["work_end"] = td.find("input", attrs={"class": "bis"}).get("value")
-                        elif "pause" in attrs:
-                            val["pause_start"] = td.find("input", attrs={"class": "von"}).get("value")
-                            val["pause_end"] = td.find("input", attrs={"class": "bis"}).get("value")
-                    date_key: str | None = val.get("date")
-                    if date_key is not None and val.get("work_start") is not None:
-                        table_data[date_key] = val
+        logging.log(logging.INFO, "try parse table...")
+        table_data: dict[str, dict[str, str | None]] = {}
+        tbl_body = tbl.find("tbody")
+        if not isinstance(tbl_body, bs.Tag):  # Ensure tbl_body is of type Tag
+            return
 
-                self.always_worked = table_data
-                logging.log(logging.DEBUG, json.dumps(table_data, indent=4))
+        for tr in tbl_body.find_all("tr", recursive=False):
+            if not isinstance(tr, bs.Tag):  # Ensure tr is of type Tag
+                continue
+            val = self._parse_table_row(tr)
+            date_key = val.get("date")
+            if date_key and val.get("work_start"):
+                table_data[date_key] = val
+
+        self.always_worked = table_data
+        logging.log(logging.DEBUG, json.dumps(table_data, indent=4))
+
+    def _parse_table_row(self, tr: bs.Tag) -> dict[str, str | None]:
+        """Parse a table row and extract relevant data."""
+        val: dict[str, str | None] = {}
+        for i, td in enumerate(tr.find_all("td", recursive=False)):
+            if not isinstance(td, bs.Tag):  # Ensure td is of type Tag
+                continue
+            attrs = td.get_attribute_list("class")  # Explicitly typed as list[str | None]
+            if i == 0:
+                span = td.find("span")
+                if isinstance(span, bs.Tag):  # Ensure span is of type Tag
+                    val["tag"] = span.text
+            elif "datum" in attrs:
+                val["date"] = td.text
+            elif "arbeit" in attrs:
+                val.update(self._extract_work_time(td))
+            elif "pause" in attrs:
+                val.update(self._extract_pause_time(td))
+        return val
+
+    def _extract_work_time(self, td: bs.Tag) -> dict[str, str | None]:
+        """Extract work start and end times from a table cell."""
+        work_start_input = td.find("input", attrs={"class": "von"})
+        work_end_input = td.find("input", attrs={"class": "bis"})
+        return {
+            "work_start": str(work_start_input["value"])
+            if isinstance(work_start_input, bs.Tag) and "value" in work_start_input.attrs
+            else None,
+            "work_end": str(work_end_input["value"])
+            if isinstance(work_end_input, bs.Tag) and "value" in work_end_input.attrs
+            else None,
+        }
+
+    def _extract_pause_time(self, td: bs.Tag) -> dict[str, str | None]:
+        """Extract pause start and end times from a table cell."""
+        pause_start_input = td.find("input", attrs={"class": "von"})
+        pause_end_input = td.find("input", attrs={"class": "bis"})
+        return {
+            "pause_start": str(pause_start_input["value"])
+            if isinstance(pause_start_input, bs.Tag) and "value" in pause_start_input.attrs
+            else None,
+            "pause_end": str(pause_end_input["value"])
+            if isinstance(pause_end_input, bs.Tag) and "value" in pause_end_input.attrs
+            else None,
+        }
