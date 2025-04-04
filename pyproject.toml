@@ -8,47 +8,43 @@ description = "clockify api usage to upload into youtrack."
 keywords = ["youtrack", "clockify", "time"]
 
 version = "1.0.0"
-requires-python = ">=3.12.0"
+requires-python = ">=3.13.0"
 readme = "README.md"
 license = { text = "MIT" }
 
 authors = [{ name = "MVladislav" }]
 
 dependencies = [
-  "bs4==0.0.2",               # https://pypi.org/project/bs4
-  "click==8.1.8",             # https://pypi.org/project/click
-  "coloredlogs==15.0.1",      # https://pypi.org/project/coloredlogs
-  "holidays==0.64",           # https://pypi.org/project/holidays
-  "httpx==0.28.1",            # https://pypi.org/project/httpx
-  "pydantic==2.10.5",         # https://pypi.org/project/pydantic
-  "pydantic-settings==2.7.1", # https://pypi.org/project/pydantic-settings
-  "pytz==2024.2",             # https://pypi.org/project/pytz
-  "starlette==0.45.2",        # https://pypi.org/project/starlette
-  "string-color==1.2.3",      # https://pypi.org/project/string-color
-  "verboselogs==1.7",         # https://pypi.org/project/verboselogs
+  "bs4==0.0.2",          # https://pypi.org/project/bs4
+  "click==8.1.8",        # https://pypi.org/project/click
+  "coloredlogs==15.0.1", # https://pypi.org/project/coloredlogs
+  "holidays==0.69",      # https://pypi.org/project/holidays
+  "httpx==0.28.1",       # https://pypi.org/project/httpx
+  "starlette==0.46.1",   # https://pypi.org/project/starlette
+  "string-color==1.2.3", # https://pypi.org/project/string-color
+  "verboselogs==1.7",    # https://pypi.org/project/verboselogs
 ]
 
 [dependency-groups]
 dev = [
-  "mypy>=1.14.1",                     # https://pypi.org/project/mypy
-  "pre-commit>=4.0.1",                # https://pypi.org/project/pre-commit
+  "mypy>=1.15.0",                     # https://pypi.org/project/mypy
+  "pre-commit>=4.2.0",                # https://pypi.org/project/pre-commit
   "pycountry>=24.6.1",                # https://pypi.org/project/pycountry
-  "pylint>=3.3.3",                    # https://pypi.org/project/pylint
+  "pylint>=3.3.6",                    # https://pypi.org/project/pylint
   "pytest-aiofiles>=0.2.0",           # https://pypi.org/project/pytest-aiofiles
-  "pytest-aiohttp>=1.0.5",            # https://pypi.org/project/pytest-aiohttp
-  "pytest-asyncio>=0.25.2",           # https://pypi.org/project/pytest-asyncio
-  "pytest-cov>=6.0.0",                # https://pypi.org/project/pytest-cov
+  "pytest-aiohttp>=1.1.0",            # https://pypi.org/project/pytest-aiohttp
+  "pytest-asyncio>=0.26.0",           # https://pypi.org/project/pytest-asyncio
+  "pytest-cov>=6.1.0",                # https://pypi.org/project/pytest-cov
   "pytest-docker-fixtures>=1.3.19",   # https://pypi.org/project/pytest-docker-fixtures
   "pytest-env>=1.1.5",                # https://pypi.org/project/pytest-env
   "pytest-timeout>=2.3.1",            # https://pypi.org/project/pytest-timeout
-  "pytest>=8.3.4",                    # https://pypi.org/project/pytest
-  "ruff>=0.9.1",                      # https://pypi.org/project/ruff
+  "pytest>=8.3.5",                    # https://pypi.org/project/pytest
+  "ruff>=0.11.4",                     # https://pypi.org/project/ruff
   "testfixtures>=8.3.0",              # https://pypi.org/project/testfixtures
-  "types-aiofiles>=24.1.0.20241221",  # https://pypi.org/project/types-aiofiles
+  "types-aiofiles>=24.1.0.20250326",  # https://pypi.org/project/types-aiofiles
   "types-cachetools>=5.5.0.20240820", # https://pypi.org/project/types-cachetools
-  "types-mock>=5.1.0.20240425",       # https://pypi.org/project/types-mock
+  "types-mock>=5.2.0.20250306",       # https://pypi.org/project/types-mock
   "types-pillow>=10.2.0.20240822",    # https://pypi.org/project/types-pillow
-  "types-pytz>=2024.2.0.20241221",    # https://pypi.org/project/types-pytz
 ]
 
 [project.scripts]
@@ -91,6 +87,7 @@ ignore = [
   "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
   "TD002",   # Missing author in TODO; try: `# TODO(<author_name>): ...` or `# TODO @<author_name>: ...`
   "TD003",   # Missing issue link on the line following this TODO
+  "LOG015",  # Use own logger instead
 ]
 
 [tool.ruff.lint.per-file-ignores]
