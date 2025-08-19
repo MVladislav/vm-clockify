@@ -18,7 +18,7 @@ dependencies = [
   "bs4==0.0.2",          # https://pypi.org/project/bs4
   "click==8.1.8",        # https://pypi.org/project/click
   "coloredlogs==15.0.1", # https://pypi.org/project/coloredlogs
-  "holidays==0.69",      # https://pypi.org/project/holidays
+  "holidays==0.79",      # https://pypi.org/project/holidays
   "httpx==0.28.1",       # https://pypi.org/project/httpx
   "starlette==0.46.1",   # https://pypi.org/project/starlette
   "string-color==1.2.3", # https://pypi.org/project/string-color
