@@ -20,7 +20,7 @@ dependencies = [
   "coloredlogs==15.0.1", # https://pypi.org/project/coloredlogs
   "holidays==0.69",      # https://pypi.org/project/holidays
   "httpx==0.28.1",       # https://pypi.org/project/httpx
-  "starlette==0.46.1",   # https://pypi.org/project/starlette
+  "starlette==1.3.1",   # https://pypi.org/project/starlette
   "string-color==1.2.3", # https://pypi.org/project/string-color
   "verboselogs==1.7",    # https://pypi.org/project/verboselogs
 ]
