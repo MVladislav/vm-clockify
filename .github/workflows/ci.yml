@@ -21,11 +21,11 @@ jobs:
     steps:
       # https://github.com/actions/checkout
       - name: ⤵️ Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # https://github.com/astral-sh/setup-uv
       - name: 🏗 Install uv and Python
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
